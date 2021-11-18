@@ -10,17 +10,25 @@ use rowan::Language;
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 #[repr(u16)]
 pub enum SyntaxKind {
+    // Tokens
     OpenParen,
     CloseParen,
     OpenBrace,
     CloseBrace,
+    OpenBracket,
+    CloseBracket,
     Ident,
-    Fn,
     Underscore,
 
+    // Keywords
+    Fn,
+    Type,
+
+    // Misc
     Comment,
     Whitespace,
 
+    // Nodes
     BlockExpr,
 
     #[doc(hidden)]
@@ -29,11 +37,7 @@ pub enum SyntaxKind {
 
 impl SyntaxKind {
     pub fn from_keyword(s: &str) -> Option<Self> {
-        let kw = match s {
-            "fn" => Self::Fn,
-            _ => return None,
-        };
-        Some(kw)
+        K![s]
     }
 }
 
