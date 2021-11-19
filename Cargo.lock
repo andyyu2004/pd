@@ -34,14 +34,15 @@ name = "pd-lex"
 version = "0.1.0"
 dependencies = [
  "pd-syntax",
+ "peekmore",
  "rustc-ap-rustc_lexer",
- "text-size",
 ]
 
 [[package]]
 name = "pd-parse"
 version = "0.1.0"
 dependencies = [
+ "pd-lex",
  "pd-syntax",
 ]
 
@@ -50,6 +51,14 @@ name = "pd-syntax"
 version = "0.1.0"
 dependencies = [
  "rowan",
+]
+
+[[package]]
+name = "peekmore"
+version = "1.0.0"
+source = "git+ssh://git@github.com/andyyu2004/peekmore.git#d2722bd77a6c4d24704fd46edfbeafd646dd12c5"
+dependencies = [
+ "smallvec",
 ]
 
 [[package]]
@@ -79,6 +88,12 @@ name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
+
+[[package]]
+name = "smallvec"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ecab6c735a6bb4139c0caafd0cc3635748bbb3acf4550e8138122099251f309"
 
 [[package]]
 name = "text-size"

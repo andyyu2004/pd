@@ -1,22 +1,98 @@
+#![warn(rust_2018_idioms)]
+#![feature(type_alias_impl_trait)]
+#![feature(trait_alias)]
+
+mod text_range;
+
+use peekmore::{PeekMore, PeekMoreIterator};
+pub use text_range::TextRange;
+
 use std::{fmt, iter};
 
-use pd_syntax::{SyntaxKind, T};
+use pd_syntax::{SyntaxKind, K, T};
 use rustc_lexer::TokenKind;
-use text_size::{TextRange, TextSize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Token {
-    kind: SyntaxKind,
-    size: TextSize,
+pub trait TokenSource {
+    fn bump(&mut self);
+    fn lookahead(&mut self, n: usize) -> Token;
+    fn current(&self) -> Token;
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct Token {
+    pub kind: SyntaxKind,
+    /// Is the current token joint to the next one (`> >` vs `>>`).
+    pub is_joint: bool,
+}
+
+pub struct TextTokenSource<'t> {
+    raw_tokens: PeekMoreIterator<RawTokens<'t>>,
+    curr: Option<Token>,
+    errors: Vec<SyntaxError>,
+}
+
+impl<'t> TextTokenSource<'t> {
+    pub fn new(raw_tokens: RawTokens<'t>) -> Self {
+        let raw_tokens = raw_tokens.peekmore();
+        let mut this = Self { raw_tokens, errors: Default::default(), curr: Default::default() };
+        this.bump();
+        this
+    }
+
+    fn mk_token(&mut self, RawToken { kind, offset, .. }: RawToken) -> Token {
+        let next = self.peek_mut();
+        let is_joint = !kind.is_trivia() && !next.kind.is_trivia() && offset + 1 == next.offset;
+        Token { kind, is_joint }
+    }
+
+    fn peek_mut(&mut self) -> RawToken {
+        let (token, err) = self.raw_tokens.peek_mut().expect("expected not to be called after eof");
+        if let Some(err) = err.take() {
+            self.errors.push(err);
+        }
+        *token
+    }
+}
+
+impl TokenSource for TextTokenSource<'_> {
+    fn bump(&mut self) {
+        let raw_token = self.peek_mut();
+        self.curr = Some(self.mk_token(raw_token));
+        self.raw_tokens.next();
+    }
+
+    #[inline]
+    fn current(&self) -> Token {
+        self.curr.expect("should only be None on construction")
+    }
+
+    fn lookahead(&mut self, n: usize) -> Token {
+        if n == 0 {
+            return self.current();
+        }
+        let &(raw_token, _) = self.raw_tokens.peek_forward(n - 1).unwrap();
+        self.raw_tokens.advance_cursor();
+        let token = self.mk_token(raw_token);
+        self.raw_tokens.reset_cursor();
+        token
+    }
+}
+
+#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct RawToken {
+    pub kind: SyntaxKind,
+    pub offset: usize,
+    pub len: usize,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct SyntaxError {
     msg: String,
     range: TextRange,
 }
 
 impl fmt::Display for SyntaxError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.msg)
     }
 }
@@ -27,17 +103,24 @@ impl SyntaxError {
     }
 }
 
-pub fn lex(src: &str) -> impl Iterator<Item = (Token, Option<SyntaxError>)> + '_ {
+type RawTokens<'t> = impl Iterator<Item = (RawToken, Option<SyntaxError>)> + 't;
+
+/// Returns an iterator over raw tokens
+/// This stream has an infinite tail full of EOF tokens
+pub fn raw_tokens(src: &str) -> RawTokens<'_> {
     let mut tokens = rustc_lexer::tokenize(src);
     let mut offset = 0;
 
     iter::from_fn(move || {
-        let token = tokens.next()?;
-        let len = TextSize::try_from(token.len).unwrap();
-        let range = TextRange::at(offset.try_into().unwrap(), len);
-        let (kind, err) = token_kind_to_syntax_kind(token.kind, &src[range]);
+        let rustc_lexer::Token { kind, len } = match tokens.next() {
+            Some(token) => token,
+            None => return Some((RawToken { offset, kind: T![EOF], len: 0 }, None)),
+        };
+        let range = TextRange::at(offset, len);
+        let (kind, err) = token_kind_to_syntax_kind(kind, &src[range]);
+        let token = RawToken { offset, kind, len };
         offset += token.len;
-        Some((Token { kind, size: len }, err.map(|err| SyntaxError::new(err, range))))
+        Some((token, err.map(|err| SyntaxError::new(err, range))))
     })
 }
 
@@ -61,19 +144,21 @@ fn token_kind_to_syntax_kind(
                 if token_text == "_" {
                     Underscore
                 } else {
-                    SyntaxKind::from_keyword(token_text).unwrap_or(Ident)
+                    K![token_text].unwrap_or(Ident)
                 },
 
             TokenKind::RawIdent => Ident,
+            TokenKind::OpenParen => T!['('],
+            TokenKind::CloseParen => T![')'],
+            TokenKind::OpenBrace => T!['{'],
+            TokenKind::CloseBrace => T!['}'],
+            TokenKind::OpenBracket => T!['['],
+            TokenKind::CloseBracket => T![']'],
+            TokenKind::Lt => T![<],
+            TokenKind::Gt => T![>],
             // TokenKind::Semi => T![;],
             // TokenKind::Comma => T![,],
             // TokenKind::Dot => T![.],
-            // TokenKind::OpenParen => T!['('],
-            // TokenKind::CloseParen => T![')'],
-            // TokenKind::OpenBrace => T!['{'],
-            // TokenKind::CloseBrace => T!['}'],
-            // TokenKind::OpenBracket => T!['['],
-            // TokenKind::CloseBracket => T![']'],
             // TokenKind::At => T![@],
             // TokenKind::Pound => T![#],
             // TokenKind::Tilde => T![~],
@@ -82,8 +167,6 @@ fn token_kind_to_syntax_kind(
             // TokenKind::Dollar => T![$],
             // TokenKind::Eq => T![=],
             // TokenKind::Bang => T![!],
-            // TokenKind::Lt => T![<],
-            // TokenKind::Gt => T![>],
             // TokenKind::Minus => T![-],
             // TokenKind::And => T![&],
             // TokenKind::Or => T![|],
@@ -96,7 +179,7 @@ fn token_kind_to_syntax_kind(
             // TokenKind::UnknownPrefix => todo!(),
             // TokenKind::Literal { kind, suffix_start } => todo!(),
             // TokenKind::Lifetime { starts_with_number } => todo!(),
-            _ => todo!(),
+            kind => todo!("{:?}", kind),
         }
     };
 
@@ -176,3 +259,6 @@ fn token_kind_to_syntax_kind(
 
     //     (syntax_kind, err)
 }
+
+#[cfg(test)]
+mod tests;

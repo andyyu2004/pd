@@ -19,6 +19,8 @@ pub enum SyntaxKind {
     CloseBracket,
     Ident,
     Underscore,
+    LeftAngle,
+    RightAngle,
 
     // Keywords
     Fn,
@@ -27,6 +29,7 @@ pub enum SyntaxKind {
     // Misc
     Comment,
     Whitespace,
+    Eof,
 
     // Nodes
     BlockExpr,
@@ -36,8 +39,9 @@ pub enum SyntaxKind {
 }
 
 impl SyntaxKind {
-    pub fn from_keyword(s: &str) -> Option<Self> {
-        K![s]
+    #[inline]
+    pub fn is_trivia(self) -> bool {
+        matches!(self, SyntaxKind::Whitespace | SyntaxKind::Comment)
     }
 }
 

@@ -34,6 +34,11 @@ macro_rules! make_kw {
 make_tokens! {
     fn => Fn,
     type => Type,
+    IDENT => Ident,
+    WS => Whitespace,
+    EOF => Eof,
+    < => LeftAngle,
+    > => RightAngle,
 }
 
 make_kw! {
