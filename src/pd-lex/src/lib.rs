@@ -4,6 +4,7 @@
 
 mod text_range;
 
+use drop_bomb::DropBomb;
 use peekmore::{PeekMore, PeekMoreIterator};
 pub use text_range::TextRange;
 
@@ -15,34 +16,83 @@ use rustc_lexer::TokenKind;
 pub trait TokenSource {
     fn bump(&mut self);
     fn lookahead(&mut self, n: usize) -> Token;
+    fn text(&self) -> &str;
     fn current(&self) -> Token;
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Token {
-    pub kind: SyntaxKind,
+    raw: RawToken,
     /// Is the current token joint to the next one (`> >` vs `>>`).
-    pub is_joint: bool,
+    is_joint: bool,
+}
+
+impl Token {
+    #[inline]
+    pub fn kind(&self) -> SyntaxKind {
+        self.raw.kind
+    }
+
+    #[inline]
+    pub fn offset(&self) -> usize {
+        self.raw.offset
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.raw.len
+    }
+
+    pub fn range(&self) -> TextRange {
+        TextRange::new(self.offset(), self.offset() + self.len())
+    }
+
+    #[inline]
+    pub fn is_joint(&self) -> bool {
+        self.is_joint
+    }
 }
 
 pub struct TextTokenSource<'t> {
+    text: &'t str,
     raw_tokens: PeekMoreIterator<RawTokens<'t>>,
     curr: Option<Token>,
     errors: Vec<SyntaxError>,
+    _bomb: DropBomb,
 }
 
 impl<'t> TextTokenSource<'t> {
-    pub fn new(raw_tokens: RawTokens<'t>) -> Self {
+    pub fn new(src: &'t str, raw_tokens: RawTokens<'t>) -> Self {
         let raw_tokens = raw_tokens.peekmore();
-        let mut this = Self { raw_tokens, errors: Default::default(), curr: Default::default() };
+        let mut _bomb = DropBomb::new("Must call `errors` to consume the errors");
+        // Allow not checking errors during tests
+        #[cfg(test)]
+        _bomb.defuse();
+        let mut this = Self {
+            text: src,
+            raw_tokens,
+            errors: Default::default(),
+            curr: Default::default(),
+            _bomb,
+        };
         this.bump();
         this
     }
 
-    fn mk_token(&mut self, RawToken { kind, offset, .. }: RawToken) -> Token {
+    pub fn from_text(text: &'t str) -> Self {
+        Self::new(text, raw_tokens(text))
+    }
+
+    pub fn errors(mut self) -> Vec<SyntaxError> {
+        self._bomb.defuse();
+        self.errors
+    }
+
+    fn mk_token(&mut self, raw: RawToken) -> Token {
         let next = self.peek_mut();
-        let is_joint = !kind.is_trivia() && !next.kind.is_trivia() && offset + 1 == next.offset;
-        Token { kind, is_joint }
+        let is_joint =
+            !raw.kind.is_trivia() && !next.kind.is_trivia() && raw.offset + 1 == next.offset;
+        Token { raw, is_joint }
     }
 
     fn peek_mut(&mut self) -> RawToken {
@@ -61,11 +111,6 @@ impl TokenSource for TextTokenSource<'_> {
         self.raw_tokens.next();
     }
 
-    #[inline]
-    fn current(&self) -> Token {
-        self.curr.expect("should only be None on construction")
-    }
-
     fn lookahead(&mut self, n: usize) -> Token {
         if n == 0 {
             return self.current();
@@ -75,6 +120,16 @@ impl TokenSource for TextTokenSource<'_> {
         let token = self.mk_token(raw_token);
         self.raw_tokens.reset_cursor();
         token
+    }
+
+    #[inline]
+    fn current(&self) -> Token {
+        self.curr.expect("should only be None on construction")
+    }
+
+    #[inline]
+    fn text(&self) -> &str {
+        self.text
     }
 }
 

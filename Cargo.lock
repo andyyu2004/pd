@@ -15,6 +15,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "328b822bdcba4d4e402be8d9adb6eebf269f969f8eadef977a553ff3c4fbcb58"
 
 [[package]]
+name = "drop_bomb"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9bda8e21c04aca2ae33ffc2fd8c23134f3cac46db123ba97bd9d3f3b8a4a85e1"
+
+[[package]]
 name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -30,9 +36,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pd-ds"
+version = "0.1.0"
+dependencies = [
+ "pd-syntax",
+]
+
+[[package]]
 name = "pd-lex"
 version = "0.1.0"
 dependencies = [
+ "drop_bomb",
  "pd-syntax",
  "peekmore",
  "rustc-ap-rustc_lexer",
@@ -42,8 +56,10 @@ dependencies = [
 name = "pd-parse"
 version = "0.1.0"
 dependencies = [
+ "pd-ds",
  "pd-lex",
  "pd-syntax",
+ "rowan",
 ]
 
 [[package]]

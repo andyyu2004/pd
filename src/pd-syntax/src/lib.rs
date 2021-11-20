@@ -43,6 +43,11 @@ impl SyntaxKind {
     pub fn is_trivia(self) -> bool {
         matches!(self, SyntaxKind::Whitespace | SyntaxKind::Comment)
     }
+
+    #[inline]
+    pub fn to_raw(self) -> rowan::SyntaxKind {
+        rowan::SyntaxKind(self as u16)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -51,17 +56,20 @@ pub struct PdLanguage;
 impl Language for PdLanguage {
     type Kind = SyntaxKind;
 
+    #[inline]
     fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
         assert!(raw.0 <= SyntaxKind::__Last as u16);
         unsafe { std::mem::transmute(raw.0) }
     }
 
+    #[inline]
     fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
-        rowan::SyntaxKind(kind as u16)
+        kind.to_raw()
     }
 }
 
 pub trait AstNode: rowan::ast::AstNode<Language = PdLanguage> {
+    #[inline]
     fn find_child<N: AstNode>(&self) -> Option<N> {
         self.syntax().children().find_map(N::cast)
     }

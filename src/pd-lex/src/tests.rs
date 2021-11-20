@@ -2,7 +2,7 @@ use super::*;
 
 macro_rules! token_source {
     ($src:expr) => {
-        TextTokenSource::new(raw_tokens($src))
+        TextTokenSource::from_text($src)
     };
 }
 
@@ -40,6 +40,14 @@ fn test_raw_lexer() {
     next!(EOF:13:0);
 }
 
+macro_rules! check_eq {
+    ($expr:expr, $kind:tt:$joint:literal) => {{
+        let token = $expr;
+        assert_eq!(token.raw.kind, T![$kind]);
+        assert_eq!(token.is_joint, $joint);
+    }};
+}
+
 #[test]
 fn test_text_token_source() {
     let mut src = token_source!(stringify! {
@@ -48,23 +56,22 @@ fn test_text_token_source() {
         }
     });
 
-    assert_eq!(src.current(), Token { kind: T![fn], is_joint: false });
+    check_eq!(src.current(), fn:false);
     // Current should not move source
-    assert_eq!(src.current(), Token { kind: T![fn], is_joint: false });
-
+    check_eq!(src.current(), fn:false);
     src.bump();
-    assert_eq!(src.current(), Token { kind: T![WS], is_joint: false });
+    check_eq!(src.current(), WS:false);
 
     assert_eq!(src.current(), src.lookahead(0));
     assert_eq!(src.lookahead(0), src.current());
-    assert_eq!(src.lookahead(1), Token { kind: T![IDENT], is_joint: false });
-    // Looking ahead multiple times shouldn't accumulate
-    assert_eq!(src.lookahead(1), Token { kind: T![IDENT], is_joint: false });
-    assert_eq!(src.lookahead(7), Token { kind: T![IDENT], is_joint: false });
-    assert_eq!(src.lookahead(8), Token { kind: T![WS], is_joint: false });
-    assert_eq!(src.lookahead(9), Token { kind: T![>], is_joint: true });
-    assert_eq!(src.lookahead(10), Token { kind: T![>], is_joint: false });
-    assert_eq!(src.lookahead(11), Token { kind: T![WS], is_joint: false });
+    check_eq!(src.lookahead(1), IDENT:false);
+    // looking ahead multiple times shouldn't accumulate
+    check_eq!(src.lookahead(1), IDENT:false);
+    check_eq!(src.lookahead(7), IDENT:false);
+    check_eq!(src.lookahead(8), WS:false);
+    check_eq!(src.lookahead(9), >:true);
+    check_eq!(src.lookahead(10), >:false);
+    check_eq!(src.lookahead(11), WS:false);
 }
 
 #[test]
@@ -80,16 +87,16 @@ fn test_text_token_source_detect_joint_token() {
     next!(EOF:6:0);
 
     let mut src = token_source!(src);
-    assert_eq!(src.lookahead(2), Token { kind: T![>], is_joint: true });
-    assert_eq!(src.lookahead(3), Token { kind: T![>], is_joint: false });
+    check_eq!(src.lookahead(2), >:true);
+    check_eq!(src.lookahead(3), >:false);
 }
 
 #[test]
 fn test_trivia_are_not_joint() {
     let mut src = token_source!(" x   y ");
-    assert_eq!(src.lookahead(0), Token { kind: T![WS], is_joint: false });
-    assert_eq!(src.lookahead(1), Token { kind: T![IDENT], is_joint: false });
+    check_eq!(src.lookahead(0), WS:false);
+    check_eq!(src.lookahead(1), IDENT:false);
     // Multiple whitespaces get compressed by rustc_lexer
-    assert_eq!(src.lookahead(2), Token { kind: T![WS], is_joint: false });
-    assert_eq!(src.lookahead(3), Token { kind: T![IDENT], is_joint: false });
+    check_eq!(src.lookahead(2), WS:false);
+    check_eq!(src.lookahead(3), IDENT:false);
 }
