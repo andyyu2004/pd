@@ -2,16 +2,20 @@ use super::*;
 use std::ops::{Bound, Index, IndexMut, Range, RangeBounds};
 
 #[derive(Hash, Default, Copy, Clone, Eq, PartialEq)]
-pub struct TextRange {
+pub struct Span {
     // Invariant: start <= end
     start: usize,
     end: usize,
 }
 
-impl TextRange {
+impl Span {
     pub fn new(start: usize, end: usize) -> Self {
         assert!(start <= end);
         Self { start, end }
+    }
+
+    pub fn zero_sized(offset: usize) -> Self {
+        Self::at(offset, 0)
     }
 
     pub fn at(offset: usize, len: usize) -> Self {
@@ -27,13 +31,13 @@ impl TextRange {
     }
 }
 
-impl fmt::Debug for TextRange {
+impl fmt::Debug for Span {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}..{}", self.start(), self.end())
     }
 }
 
-impl RangeBounds<usize> for TextRange {
+impl RangeBounds<usize> for Span {
     fn start_bound(&self) -> Bound<&usize> {
         Bound::Included(&self.start)
     }
@@ -43,44 +47,44 @@ impl RangeBounds<usize> for TextRange {
     }
 }
 
-impl<T> From<TextRange> for Range<T>
+impl<T> From<Span> for Range<T>
 where
     T: From<usize>,
 {
     #[inline]
-    fn from(r: TextRange) -> Self {
+    fn from(r: Span) -> Self {
         r.start().into()..r.end().into()
     }
 }
 
-impl Index<TextRange> for str {
+impl Index<Span> for str {
     type Output = str;
 
     #[inline]
-    fn index(&self, index: TextRange) -> &str {
+    fn index(&self, index: Span) -> &str {
         &self[Range::<usize>::from(index)]
     }
 }
 
-impl Index<TextRange> for String {
+impl Index<Span> for String {
     type Output = str;
 
     #[inline]
-    fn index(&self, index: TextRange) -> &str {
+    fn index(&self, index: Span) -> &str {
         &self[Range::<usize>::from(index)]
     }
 }
 
-impl IndexMut<TextRange> for str {
+impl IndexMut<Span> for str {
     #[inline]
-    fn index_mut(&mut self, index: TextRange) -> &mut str {
+    fn index_mut(&mut self, index: Span) -> &mut str {
         &mut self[Range::<usize>::from(index)]
     }
 }
 
-impl IndexMut<TextRange> for String {
+impl IndexMut<Span> for String {
     #[inline]
-    fn index_mut(&mut self, index: TextRange) -> &mut str {
+    fn index_mut(&mut self, index: Span) -> &mut str {
         &mut self[Range::<usize>::from(index)]
     }
 }

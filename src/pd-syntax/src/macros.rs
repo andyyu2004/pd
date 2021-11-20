@@ -8,7 +8,6 @@ macro_rules! make_tokens {
             (')') => {{ $crate::SyntaxKind::CloseParen }};
             ('[') => {{ $crate::SyntaxKind::OpenBracket }};
             (']') => {{ $crate::SyntaxKind::CloseBracket }};
-            (fn) => {{ $crate::SyntaxKind::Fn }};
 
             $(($tt) => {{ $crate::SyntaxKind::$variant }});*
         }
@@ -32,18 +31,25 @@ macro_rules! make_kw {
 }
 
 make_tokens! {
-    fn => Fn,
-    type => Type,
-    IDENT => Ident,
-    WS => Whitespace,
-    EOF => Eof,
+    fn => FnKw,
+    type => TypeKw,
     < => LeftAngle,
     > => RightAngle,
+    IDENT => Ident,
+    PARAMS => Params,
+    WS => Whitespace,
+    EOF => Eof,
+    ERROR => Error,
+
+    FN => Fn,
+    STMTS => Stmts,
+
+    BLOCK_EXPR => BlockExpr,
 }
 
 make_kw! {
-    fn => Fn,
-    type => Type,
+    fn => FnKw,
+    type => TypeKw,
 }
 
 #[cfg(test)]
@@ -59,7 +65,7 @@ mod test {
     fn test_k_macro() {
         use crate::SyntaxKind;
         let fn_kw = "fn";
-        assert_eq!(K![fn_kw], Some(SyntaxKind::Fn));
-        assert_eq!(K!["type"], Some(SyntaxKind::Type));
+        assert_eq!(K![fn_kw], Some(SyntaxKind::FnKw));
+        assert_eq!(K!["type"], Some(SyntaxKind::TypeKw));
     }
 }

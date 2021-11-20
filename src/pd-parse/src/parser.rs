@@ -1,39 +1,90 @@
 use pd_ds::token_set::TokenSet;
-use pd_lex::TokenSource;
-use pd_syntax::SyntaxKind;
+use pd_lex::{Span, SyntaxError, Token, TokenSource};
+use pd_syntax::{ast, AstNode, SyntaxKind, SyntaxNode, T};
 
-use crate::parse;
+use crate::parse::{self, Parse};
 
-pub(crate) fn parse_source_file(token_source: &mut dyn TokenSource) {
+pub(crate) fn parse_source_file(token_source: &mut dyn TokenSource) -> Parse<ast::SourceFile> {
     let mut parser = Parser::new(token_source);
-    parse::parse_fn(&mut parser);
+    parser.enter(SyntaxKind::SourceFile, |parser| {
+        parse::parse_fn(parser);
+    });
+    parser.finish()
 }
 
 pub(crate) struct Parser<'t> {
     source: &'t mut dyn TokenSource,
     builder: rowan::GreenNodeBuilder<'static>,
+    errors: Vec<ParseError>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct ParseError {
+    pub span: Span,
+    pub kind: ParseErrorKind,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ParseErrorKind {
+    Expected(SyntaxKind),
+    Message(String),
 }
 
 impl<'t> Parser<'t> {
     pub fn new(source: &'t mut dyn TokenSource) -> Self {
-        Self { source, builder: Default::default() }
+        Self { source, builder: Default::default(), errors: Default::default() }
+    }
+
+    pub fn finish<T: AstNode>(mut self) -> Parse<T> {
+        let node = self.builder.finish();
+        self.errors.extend(
+            self.source
+                .errors()
+                .into_iter()
+                .map(|err| ParseError { span: err.span, kind: ParseErrorKind::Message(err.msg) }),
+        );
+        Parse::new(node, self.errors)
+    }
+
+    pub fn enter(&mut self, kind: SyntaxKind, f: impl FnOnce(&mut Self)) {
+        self.builder.start_node(kind.to_raw());
+        f(self);
+        self.builder.finish_node();
+    }
+
+    pub fn in_parens(&mut self, kind: SyntaxKind, f: impl FnOnce(&mut Self)) {
+        if !self.at(T!['(']) {
+            return self.error(ParseErrorKind::Expected(T!['(']));
+        }
+        self.enter(kind, |p| {
+            p.bump(T!['(']);
+            f(p);
+            p.expect(T![')']);
+        })
+    }
+
+    pub fn in_braces(&mut self, kind: SyntaxKind, f: impl FnOnce(&mut Self)) {
+        if !self.at(T!['{']) {
+            return self.error(ParseErrorKind::Expected(T!['{']));
+        }
+        self.enter(kind, |p| {
+            p.bump(T!['{']);
+            f(p);
+            p.expect(T!['}']);
+        })
     }
 
     /// Asserts the current token kind matches `kind` and consumes the token
     pub fn bump(&mut self, kind: SyntaxKind) {
-        assert!(self.expect(kind));
-        self.eat_trivia();
+        assert!(self.at(kind));
+        self.bump_any();
     }
 
-    fn eat_trivia(&mut self) {
-        loop {
-            let current = self.source.current();
-            if !current.kind().is_trivia() {
-                break;
-            }
-            self.builder.token(current.kind().to_raw(), &self.source.text()[current.range()]);
-            self.source.bump()
-        }
+    pub fn bump_any(&mut self) {
+        let current = self.current();
+        self.builder.token(current.kind().to_raw(), &self.source.text()[current.span()]);
+        self.source.bump();
+        self.eat_trivia();
     }
 
     /// Consumes the current token if it matches
@@ -42,8 +93,7 @@ impl<'t> Parser<'t> {
             return false;
         }
         // TODO account for glued tokens (may need to advance more than once)
-        self.source.bump();
-        self.eat_trivia();
+        self.bump_any();
         true
     }
 
@@ -64,7 +114,21 @@ impl<'t> Parser<'t> {
         if recovery.contains(self.source.current().kind()) {
             return;
         }
-        todo!("expected {:?} but found {:?}", expected, self.source.current().kind());
+        self.error_node(format!("e"));
+    }
+
+    fn error(&mut self, kind: ParseErrorKind) {
+        let offset = self.current().span().start();
+        let span = Span::zero_sized(offset);
+        self.errors.push(ParseError { span, kind })
+    }
+
+    pub fn error_node(&mut self, s: String) {
+        self.enter(T![ERROR], |p| {
+            let text = p.source.current_text();
+            p.builder.token(T![ERROR].to_raw(), text);
+            p.bump_any();
+        })
     }
 
     pub fn at(&mut self, kind: SyntaxKind) -> bool {
@@ -74,5 +138,29 @@ impl<'t> Parser<'t> {
     pub fn nth_at(&mut self, n: usize, kind: SyntaxKind) -> bool {
         // TODO glue tokens
         self.source.lookahead(n).kind() == kind
+    }
+
+    fn current(&self) -> Token {
+        self.source.current()
+    }
+
+    fn text(&self) -> &str {
+        self.source.text()
+    }
+
+    fn current_text(&mut self) -> &str {
+        &self.text()[self.current().span()]
+    }
+
+    // We only have trailing trivia currently (never any leading)
+    fn eat_trivia(&mut self) {
+        loop {
+            let current = self.source.current();
+            if !current.kind().is_trivia() {
+                break;
+            }
+            self.builder.token(current.kind().to_raw(), &self.source.text()[current.span()]);
+            self.source.bump()
+        }
     }
 }

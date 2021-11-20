@@ -1,7 +1,5 @@
-mod ast;
+pub mod ast;
 mod macros;
-
-pub use ast::*;
 
 use rowan::ast::AstNode as _;
 use rowan::Language;
@@ -23,16 +21,28 @@ pub enum SyntaxKind {
     RightAngle,
 
     // Keywords
-    Fn,
-    Type,
+    FnKw,
+    TypeKw,
 
     // Misc
     Comment,
     Whitespace,
+    Error,
     Eof,
 
     // Nodes
+    Params,
+
+    // Items
+    Fn,
+
+    // Statements
+    Stmts,
+
+    // Expressions
     BlockExpr,
+
+    SourceFile,
 
     #[doc(hidden)]
     __Last,

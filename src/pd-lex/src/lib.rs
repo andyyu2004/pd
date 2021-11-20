@@ -4,9 +4,8 @@
 
 mod text_range;
 
-use drop_bomb::DropBomb;
 use peekmore::{PeekMore, PeekMoreIterator};
-pub use text_range::TextRange;
+pub use text_range::Span;
 
 use std::{fmt, iter};
 
@@ -16,8 +15,13 @@ use rustc_lexer::TokenKind;
 pub trait TokenSource {
     fn bump(&mut self);
     fn lookahead(&mut self, n: usize) -> Token;
+    fn errors(&mut self) -> Vec<SyntaxError>;
+
     fn text(&self) -> &str;
     fn current(&self) -> Token;
+    fn current_text(&self) -> &str {
+        &self.text()[self.current().span()]
+    }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -43,8 +47,9 @@ impl Token {
         self.raw.len
     }
 
-    pub fn range(&self) -> TextRange {
-        TextRange::new(self.offset(), self.offset() + self.len())
+    #[inline]
+    pub fn span(&self) -> Span {
+        Span::new(self.offset(), self.offset() + self.len())
     }
 
     #[inline]
@@ -58,34 +63,19 @@ pub struct TextTokenSource<'t> {
     raw_tokens: PeekMoreIterator<RawTokens<'t>>,
     curr: Option<Token>,
     errors: Vec<SyntaxError>,
-    _bomb: DropBomb,
 }
 
 impl<'t> TextTokenSource<'t> {
     pub fn new(src: &'t str, raw_tokens: RawTokens<'t>) -> Self {
         let raw_tokens = raw_tokens.peekmore();
-        let mut _bomb = DropBomb::new("Must call `errors` to consume the errors");
-        // Allow not checking errors during tests
-        #[cfg(test)]
-        _bomb.defuse();
-        let mut this = Self {
-            text: src,
-            raw_tokens,
-            errors: Default::default(),
-            curr: Default::default(),
-            _bomb,
-        };
+        let mut this =
+            Self { text: src, raw_tokens, errors: Default::default(), curr: Default::default() };
         this.bump();
         this
     }
 
     pub fn from_text(text: &'t str) -> Self {
         Self::new(text, raw_tokens(text))
-    }
-
-    pub fn errors(mut self) -> Vec<SyntaxError> {
-        self._bomb.defuse();
-        self.errors
     }
 
     fn mk_token(&mut self, raw: RawToken) -> Token {
@@ -131,6 +121,11 @@ impl TokenSource for TextTokenSource<'_> {
     fn text(&self) -> &str {
         self.text
     }
+
+    #[inline]
+    fn errors(&mut self) -> Vec<SyntaxError> {
+        std::mem::take(&mut self.errors)
+    }
 }
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -142,8 +137,8 @@ pub struct RawToken {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SyntaxError {
-    msg: String,
-    range: TextRange,
+    pub msg: String,
+    pub span: Span,
 }
 
 impl fmt::Display for SyntaxError {
@@ -153,8 +148,8 @@ impl fmt::Display for SyntaxError {
 }
 
 impl SyntaxError {
-    pub fn new(msg: impl Into<String>, range: TextRange) -> Self {
-        Self { msg: msg.into(), range }
+    pub fn new(msg: impl Into<String>, range: Span) -> Self {
+        Self { msg: msg.into(), span: range }
     }
 }
 
@@ -171,7 +166,7 @@ pub fn raw_tokens(src: &str) -> RawTokens<'_> {
             Some(token) => token,
             None => return Some((RawToken { offset, kind: T![EOF], len: 0 }, None)),
         };
-        let range = TextRange::at(offset, len);
+        let range = Span::at(offset, len);
         let (kind, err) = token_kind_to_syntax_kind(kind, &src[range]);
         let token = RawToken { offset, kind, len };
         offset += token.len;
