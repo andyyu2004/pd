@@ -4,27 +4,27 @@ use pd_syntax::{ast, AstNode, SyntaxKind, SyntaxNode, T};
 
 use crate::parse::{self, Parse};
 
-pub(crate) fn parse_source_file(token_source: &mut dyn TokenSource) -> Parse<ast::SourceFile> {
-    let mut parser = Parser::new(token_source);
-    parser.enter(SyntaxKind::SourceFile, |parser| {
-        parse::parse_fn(parser);
-    });
-    parser.finish()
-}
+// pub(crate) fn parse_source_file(token_source: &mut dyn TokenSource) -> Parse<ast::SourceFile> {
+// let mut parser = Parser::new(token_source);
+// parser.enter(SyntaxKind::SourceFile, |parser| {
+// parse::parse_fn(parser);
+// });
+// parser.finish()
+// }
 
-pub(crate) struct Parser<'t> {
+pub struct Parser<'t> {
     source: &'t mut dyn TokenSource,
     builder: rowan::GreenNodeBuilder<'static>,
     errors: Vec<ParseError>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParseError {
     pub span: Span,
     pub kind: ParseErrorKind,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ParseErrorKind {
     Expected(SyntaxKind),
     Message(String),

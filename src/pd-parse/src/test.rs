@@ -1,20 +1,13 @@
 use pd_lex::Span;
-use pd_syntax::T;
+use pd_syntax::{ast, T};
 
 use super::*;
-use crate::parse_source;
+use crate::parse::parse;
 use crate::parser::{ParseError, ParseErrorKind};
-
-fn parse_fn(src: &str) -> Parse<ast::Fn> {
-    let mut token_source = TextTokenSource::from_text(src);
-    let mut parser = Parser::new(&mut token_source);
-    parse::parse_fn(&mut parser);
-    parser.finish()
-}
 
 #[test]
 fn test_parse_ok_fn() {
-    let parsed = parse_fn(stringify!(
+    let parsed = parse::parse::<ast::Fn>(stringify!(
         fn main() {
         }
     ));
@@ -39,7 +32,7 @@ fn test_parse_ok_fn() {
 
 #[test]
 fn test_parse_fn_missing_params() {
-    let parsed = parse_fn(stringify!(
+    let parsed = parse::<ast::Fn>(stringify!(
         fn main {
         }
     ));
@@ -66,7 +59,7 @@ fn test_parse_fn_missing_params() {
 
 #[test]
 fn test_parse_fn_missing_name() {
-    let parsed = parse_fn(stringify!(
+    let parsed = parse::<ast::Fn>(stringify!(
         fn main {
         }
     ));

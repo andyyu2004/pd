@@ -6,6 +6,10 @@ pub(crate) struct NotificationDispatcher<'lcx> {
     pub(crate) lcx: &'lcx LspContext,
 }
 
+// sum two numbers
+fn sum() {
+}
+
 impl<'lcx> NotificationDispatcher<'lcx> {
     pub fn on<N>(&mut self, f: fn(&LspContext, N::Params) -> Result<()>) -> Result<&mut Self>
     where

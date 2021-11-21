@@ -1,21 +1,22 @@
 use std::marker::PhantomData;
+use std::sync::Arc;
 
-use pd_lex::SyntaxError;
-use pd_syntax::{SyntaxNode, T};
+use pd_lex::TextTokenSource;
+use pd_syntax::{ast, AstNode, SyntaxNode, T};
 use rowan::GreenNode;
 
 use crate::parser::{ParseError, Parser};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Parse<T> {
     node: GreenNode,
-    errors: Vec<ParseError>,
+    errors: Arc<Vec<ParseError>>,
     _marker: PhantomData<fn() -> T>,
 }
 
 impl<T> Parse<T> {
     pub fn new(node: GreenNode, errors: Vec<ParseError>) -> Self {
-        Self { node, errors, _marker: PhantomData }
+        Self { node, errors: Arc::new(errors), _marker: PhantomData }
     }
 
     #[inline]
@@ -27,6 +28,35 @@ impl<T> Parse<T> {
     pub fn errors(&self) -> &[ParseError] {
         &self.errors
     }
+}
+
+pub trait ParseNode: AstNode {
+    fn parse(_: &mut Parser<'_>);
+}
+
+impl ParseNode for ast::SourceFile {
+    #[inline]
+    fn parse(parser: &mut Parser<'_>) {
+        parse_source_file(parser)
+    }
+}
+
+impl ParseNode for ast::Fn {
+    #[inline]
+    fn parse(parser: &mut Parser<'_>) {
+        parse_fn(parser)
+    }
+}
+
+pub fn parse<N: ParseNode>(text: &str) -> Parse<N> {
+    let mut token_source = TextTokenSource::from_text(text);
+    let mut parser = Parser::new(&mut token_source);
+    N::parse(&mut parser);
+    parser.finish()
+}
+
+pub(crate) fn parse_source_file(p: &mut Parser<'_>) {
+    parse_fn(p)
 }
 
 pub(crate) fn parse_fn(p: &mut Parser<'_>) {
