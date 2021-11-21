@@ -4,4 +4,5 @@ members = [
     "src/pd-parse",
     "src/pd-lex",
     "src/pd-ds",
+    "src/pd-ls",
 ]

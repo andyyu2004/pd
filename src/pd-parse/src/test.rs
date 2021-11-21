@@ -63,3 +63,30 @@ fn test_parse_fn_missing_params() {
         ParseError { span: Span::new(8, 8), kind: ParseErrorKind::Expected(T!['(']) }
     );
 }
+
+#[test]
+fn test_parse_fn_missing_name() {
+    let parsed = parse_fn(stringify!(
+        fn main {
+        }
+    ));
+
+    let expected = r#"Fn@0..11
+  FnKw@0..2 "fn"
+  Whitespace@2..3 " "
+  Ident@3..7 "main"
+  Whitespace@7..8 " "
+  BlockExpr@8..11
+    OpenBrace@8..9 "{"
+    Whitespace@9..10 " "
+    Stmts@10..10
+    CloseBrace@10..11 "}"
+"#;
+
+    assert_eq!(expected, format!("{:#?}", parsed.syntax()));
+    assert_eq!(parsed.errors().len(), 1);
+    assert_eq!(
+        parsed.errors()[0],
+        ParseError { span: Span::new(8, 8), kind: ParseErrorKind::Expected(T!['(']) }
+    );
+}
