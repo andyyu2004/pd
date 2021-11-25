@@ -20,6 +20,7 @@ impl LspContext {
     }
 
     pub fn handle_event(&mut self, event: Event) -> Result<()> {
+        info!("received event: {:?}", event);
         match event {
             Event::Lsp(msg) => match msg {
                 lsp_server::Message::Request(req) => self.handle_request(req),

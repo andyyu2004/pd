@@ -14,9 +14,11 @@ export async function createContext(
   context: vscode.ExtensionContext,
   { serverPath }: Config
 ): Promise<LspContext> {
+  console.debug("starting pdls client");
   const client = createClient(serverPath);
   context.subscriptions.push(client.start());
   await client.onReady();
+  console.debug("LSP client ready");
 
   const lcx = {
     client,
