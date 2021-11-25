@@ -20,8 +20,7 @@ fn main() -> Result<()> {
 
     connection.initialize_finish(initialize_id, serde_json::to_value(initialize_result)?)?;
 
-    let lcx = LspContext::new();
-
+    let mut lcx = LspContext::new();
     while let Some(event) = lcx.next_event(&connection.receiver) {
         if let Event::Lsp(lsp_server::Message::Notification(notif)) = &event {
             if notif.method == lsp_types::notification::Exit::METHOD {

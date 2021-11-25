@@ -5,13 +5,28 @@ use std::sync::Arc;
 
 newtype_index!(FileId);
 
+#[salsa::database(SourceDatabaseStorage)]
+#[derive(Default)]
+pub struct RootDatabase {
+    storage: salsa::Storage<Self>,
+}
+
+impl salsa::Database for RootDatabase {
+}
+
+impl salsa::ParallelDatabase for RootDatabase {
+    fn snapshot(&self) -> salsa::Snapshot<RootDatabase> {
+        salsa::Snapshot::new(RootDatabase { storage: self.storage.snapshot() })
+    }
+}
+
 #[salsa::query_group(SourceDatabaseStorage)]
 pub trait SourceDatabase: salsa::Database {
     #[salsa::input]
-    fn input_text(&self, file_id: FileId) -> Arc<String>;
+    fn file_text(&self, file_id: FileId) -> Arc<String>;
     fn parse_file(&self, file_id: FileId) -> Parse<ast::SourceFile>;
 }
 
 fn parse_file(db: &dyn SourceDatabase, file_id: FileId) -> Parse<ast::SourceFile> {
-    parse::parse(&db.input_text(file_id))
+    parse::parse(&db.file_text(file_id))
 }

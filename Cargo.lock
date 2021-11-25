@@ -304,6 +304,10 @@ dependencies = [
 [[package]]
 name = "pd-ide"
 version = "0.1.0"
+dependencies = [
+ "pd-db",
+ "salsa",
+]
 
 [[package]]
 name = "pd-lex"
@@ -323,6 +327,7 @@ dependencies = [
  "crossbeam-channel",
  "lsp-server",
  "lsp-types",
+ "pd-ide",
  "serde",
  "serde_json",
  "tracing",

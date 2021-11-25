@@ -1,13 +1,15 @@
-use crate::dispatch::NotificationDispatcher;
-
 use super::{Event, Result};
+use crate::dispatch::NotificationDispatcher;
 use crossbeam_channel::{select, Receiver};
+use pd_ide::{AnalysisCtxt, Change};
 
-pub(crate) struct LspContext {}
+pub(crate) struct LspContext {
+    analysis_ctxt: AnalysisCtxt,
+}
 
 impl LspContext {
     pub fn new() -> Self {
-        Self {}
+        Self { analysis_ctxt: Default::default() }
     }
 
     pub fn next_event(&self, inbox: &Receiver<lsp_server::Message>) -> Option<Event> {
@@ -17,7 +19,7 @@ impl LspContext {
         }
     }
 
-    pub fn handle_event(&self, event: Event) -> Result<()> {
+    pub fn handle_event(&mut self, event: Event) -> Result<()> {
         match event {
             Event::Lsp(msg) => match msg {
                 lsp_server::Message::Request(req) => self.handle_request(req),
@@ -37,7 +39,7 @@ impl LspContext {
         todo!()
     }
 
-    fn handle_notif(&self, notif: lsp_server::Notification) -> Result<()> {
+    fn handle_notif(&mut self, notif: lsp_server::Notification) -> Result<()> {
         NotificationDispatcher { lcx: self, notif: Some(notif) }
             .on::<lsp_types::notification::DidChangeTextDocument>(|this, params| {
             this.handle_did_change_text_document(params)
@@ -46,10 +48,12 @@ impl LspContext {
     }
 
     pub(crate) fn handle_did_change_text_document(
-        &self,
+        &mut self,
         params: lsp_types::DidChangeTextDocumentParams,
     ) -> Result<(), anyhow::Error> {
         trace!("handle_did_change_text_document");
+        let mut change = Change::default();
+        self.analysis_ctxt.apply_change(change);
         Ok(())
     }
 }
