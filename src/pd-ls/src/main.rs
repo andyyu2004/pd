@@ -4,6 +4,7 @@ extern crate tracing;
 mod capabilities;
 mod context;
 mod dispatch;
+mod vfs;
 
 use anyhow::Result;
 use context::LspContext;

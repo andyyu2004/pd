@@ -325,6 +325,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
+ "indexed_vec",
+ "indexmap",
  "lsp-server",
  "lsp-types",
  "pd-ide",

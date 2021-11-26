@@ -1,15 +1,17 @@
 use super::{Event, Result};
 use crate::dispatch::NotificationDispatcher;
+use crate::vfs::Vfs;
 use crossbeam_channel::{select, Receiver};
-use pd_ide::{AnalysisCtxt, Change};
+use pd_ide::{AnalysisCtxt, Change, FileChange};
 
 pub(crate) struct LspContext {
     analysis_ctxt: AnalysisCtxt,
+    vfs: Vfs,
 }
 
 impl LspContext {
     pub fn new() -> Self {
-        Self { analysis_ctxt: Default::default() }
+        Self { analysis_ctxt: Default::default(), vfs: Default::default() }
     }
 
     pub fn next_event(&self, inbox: &Receiver<lsp_server::Message>) -> Option<Event> {
@@ -41,19 +43,46 @@ impl LspContext {
     }
 
     fn handle_notif(&mut self, notif: lsp_server::Notification) -> Result<()> {
-        NotificationDispatcher { lcx: self, notif: Some(notif) }
-            .on::<lsp_types::notification::DidChangeTextDocument>(|this, params| {
-            this.handle_did_change_text_document(params)
-        })?;
+        let mut dispatcher = NotificationDispatcher { lcx: self, notif: Some(notif) };
+        dispatcher
+            .on::<lsp_types::notification::DidChangeTextDocument>(Self::did_change_document)?
+            .on::<lsp_types::notification::DidOpenTextDocument>(Self::did_open_document)?;
+
+        assert!(
+            dispatcher.notif.is_none(),
+            "unhandled notification `{:?}`",
+            dispatcher.notif.unwrap()
+        );
+
         Ok(())
     }
 
-    pub(crate) fn handle_did_change_text_document(
+    fn did_change_document(
         &mut self,
         params: lsp_types::DidChangeTextDocumentParams,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<()> {
         trace!("handle_did_change_text_document");
-        let mut change = Change::default();
+        let file_id = self.vfs.intern_path(params.text_document.uri.path());
+        assert_eq!(params.content_changes.len(), 1, "implementing full sync only for now");
+        let mut new_text = String::new();
+        for content_change in params.content_changes {
+            match content_change.range {
+                Some(_range) => todo!(),
+                None => new_text = content_change.text,
+            };
+        }
+
+        let change = Change::single(file_id, FileChange::Modified(new_text));
+        self.analysis_ctxt.apply_change(change);
+
+        Ok(())
+    }
+
+    fn did_open_document(&mut self, params: lsp_types::DidOpenTextDocumentParams) -> Result<()> {
+        trace!("handle_did_open_text_document");
+        let doc = params.text_document;
+        let file_id = self.vfs.intern_path(doc.uri.path());
+        let change = Change::single(file_id, FileChange::Created(doc.text));
         self.analysis_ctxt.apply_change(change);
         Ok(())
     }
