@@ -42,6 +42,7 @@ impl AnalysisCtxt {
     }
 
     pub fn apply_change(&mut self, change: Change) {
+        self.db.request_cancellation();
         for (file_id, file_change) in change.files_changed {
             let new_text = match file_change {
                 FileChange::Created(text) | FileChange::Modified(text) => text,

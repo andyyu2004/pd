@@ -1,6 +1,7 @@
 use indexed_vec::newtype_index;
 use pd_parse::{parse, Parse};
 use pd_syntax::ast;
+use salsa::{Database, Durability};
 use std::sync::Arc;
 
 newtype_index!(FileId);
@@ -9,6 +10,12 @@ newtype_index!(FileId);
 #[derive(Default)]
 pub struct RootDatabase {
     storage: salsa::Storage<Self>,
+}
+
+impl RootDatabase {
+    pub fn request_cancellation(&mut self) {
+        self.salsa_runtime_mut().synthetic_write(Durability::LOW);
+    }
 }
 
 impl salsa::Database for RootDatabase {

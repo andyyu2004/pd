@@ -33,6 +33,7 @@ macro_rules! make_kw {
 make_tokens! {
     fn => FnKw,
     type => TypeKw,
+
     < => LeftAngle,
     > => RightAngle,
     IDENT => Ident,
