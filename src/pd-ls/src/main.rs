@@ -4,6 +4,7 @@ extern crate tracing;
 mod capabilities;
 mod context;
 mod dispatch;
+mod lsp_ext;
 mod vfs;
 
 use anyhow::Result;
@@ -32,7 +33,7 @@ fn main() -> Result<()> {
 
     info!("pdls initialized");
 
-    let mut lcx = LspContext::new();
+    let mut lcx = LspContext::new(connection.sender);
     while let Some(event) = lcx.next_event(&connection.receiver) {
         if let Event::Lsp(lsp_server::Message::Notification(notif)) = &event {
             if notif.method == lsp_types::notification::Exit::METHOD {

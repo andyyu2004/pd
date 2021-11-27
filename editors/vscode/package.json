@@ -20,6 +20,11 @@
         "command": "pd-lsp.status",
         "title": "status",
         "category": "pd lsp"
+      },
+      {
+        "command": "pd-lsp.syntax-tree",
+        "title": "show syntax tree",
+        "category": "pd lsp"
       }
     ],
     "languages": [

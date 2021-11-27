@@ -14,8 +14,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export async function tryActivate(context: vscode.ExtensionContext) {
   const config = createConfig(context);
-  const cx = await createContext(context, config);
-  cx.registerCommand("pd-lsp.status", commands.status);
+  const lcx = await createContext(context, config);
+  commands.register(lcx);
 }
 
 export function deactivate() {}

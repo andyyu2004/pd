@@ -1,23 +1,37 @@
 use super::{Event, Result};
-use crate::dispatch::NotificationDispatcher;
+use crate::dispatch::{NotificationDispatcher, RequestDispatcher};
+use crate::lsp_ext;
 use crate::vfs::Vfs;
-use crossbeam_channel::{select, Receiver};
-use pd_ide::{AnalysisCtxt, Change, FileChange};
+use crossbeam_channel::{select, Receiver, Sender};
+use lsp_server::{ErrorCode, Message, RequestId, Response};
+use lsp_types::request::Request;
+use pd_ide::{Analysis, AnalysisCtxt, Change, FileChange};
+use serde::Serialize;
 
 pub(crate) struct LspContext {
-    analysis_ctxt: AnalysisCtxt,
+    sender: Sender<Message>,
+    acx: AnalysisCtxt,
     vfs: Vfs,
 }
 
 impl LspContext {
-    pub fn new() -> Self {
-        Self { analysis_ctxt: Default::default(), vfs: Default::default() }
+    pub fn new(sender: Sender<Message>) -> Self {
+        Self { sender, acx: Default::default(), vfs: Default::default() }
+    }
+
+    pub fn respond<R: Serialize>(&self, request_id: RequestId, res: R) -> Result<()> {
+        self.sender.send(Message::Response(Response::new_ok(request_id, res)))?;
+        Ok(())
+    }
+
+    pub fn respond_err(&self, request_id: RequestId, code: ErrorCode, msg: String) -> Result<()> {
+        self.sender.send(Message::Response(Response::new_err(request_id, code as i32, msg)))?;
+        Ok(())
     }
 
     pub fn next_event(&self, inbox: &Receiver<lsp_server::Message>) -> Option<Event> {
         select! {
             recv(inbox) -> msg => msg.ok().map(Event::Lsp),
-
         }
     }
 
@@ -32,12 +46,14 @@ impl LspContext {
         }
     }
 
-    pub(crate) fn handle_request(&self, req: lsp_server::Request) -> Result<()> {
-        let _ = req;
-        todo!()
+    pub(crate) fn handle_request(&mut self, req: lsp_server::Request) -> Result<()> {
+        let mut dispatcher = RequestDispatcher { lcx: self, req: Some(req) };
+        dispatcher.on::<lsp_ext::SyntaxTree>(Self::syntax_tree)?;
+        assert!(dispatcher.req.is_none(), "unhandled request `{:?}`", dispatcher.req.unwrap());
+        Ok(())
     }
 
-    pub(crate) fn handle_response(&self, res: lsp_server::Response) -> Result<()> {
+    pub(crate) fn handle_response(&mut self, res: lsp_server::Response) -> Result<()> {
         let _ = res;
         todo!()
     }
@@ -57,6 +73,16 @@ impl LspContext {
         Ok(())
     }
 
+    fn syntax_tree(
+        &mut self,
+        params: lsp_ext::SyntaxTreeParams,
+    ) -> Result<<lsp_ext::SyntaxTree as Request>::Result> {
+        let file_id = self.vfs.intern_path(params.text_document.uri.path());
+        let analysis = self.acx.analysis();
+        let parsed = analysis.parse(file_id)?;
+        Ok(format!("{:#?}", parsed.syntax()))
+    }
+
     fn did_change_document(
         &mut self,
         params: lsp_types::DidChangeTextDocumentParams,
@@ -73,7 +99,7 @@ impl LspContext {
         }
 
         let change = Change::single(file_id, FileChange::Modified(new_text));
-        self.analysis_ctxt.apply_change(change);
+        self.acx.apply_change(change);
 
         Ok(())
     }
@@ -83,7 +109,7 @@ impl LspContext {
         let doc = params.text_document;
         let file_id = self.vfs.intern_path(doc.uri.path());
         let change = Change::single(file_id, FileChange::Created(doc.text));
-        self.analysis_ctxt.apply_change(change);
+        self.acx.apply_change(change);
         Ok(())
     }
 }

@@ -1,12 +1,30 @@
+use std::panic::UnwindSafe;
 use std::sync::Arc;
 
 pub use pd_db::FileId;
 
 use pd_db::{RootDatabase, SourceDatabase};
-use salsa::ParallelDatabase;
+use pd_parse::Parse;
+use pd_syntax::ast;
+use salsa::{Cancelled, ParallelDatabase};
+
+pub type Cancellable<T> = Result<T, Cancelled>;
 
 pub struct Analysis {
     snapshot: salsa::Snapshot<RootDatabase>,
+}
+
+impl Analysis {
+    pub fn parse(&self, file_id: FileId) -> Cancellable<Parse<ast::SourceFile>> {
+        self.with_db(|db| db.parse_file(file_id))
+    }
+
+    fn with_db<R>(
+        &self,
+        f: impl FnOnce(&salsa::Snapshot<RootDatabase>) -> R + UnwindSafe,
+    ) -> Cancellable<R> {
+        salsa::Cancelled::catch(|| f(&self.snapshot))
+    }
 }
 
 #[derive(Default)]
@@ -54,3 +72,6 @@ pub enum FileChange {
     Modified(String),
     Deleted,
 }
+
+#[cfg(test)]
+mod tests;

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use pd_lex::TextTokenSource;
-use pd_syntax::{ast, AstNode, SyntaxNode, T};
+use pd_syntax::{ast, AstNode, SyntaxKind, SyntaxNode, T};
 use rowan::GreenNode;
 
 use crate::parser::{ParseError, Parser};
@@ -56,7 +56,13 @@ pub fn parse<N: ParseNode>(text: &str) -> Parse<N> {
 }
 
 pub(crate) fn parse_source_file(p: &mut Parser<'_>) {
-    parse_fn(p)
+    p.enter(SyntaxKind::SourceFile, |p| {
+        if p.at(T![fn]) {
+            parse_fn(p)
+        } else {
+            p.expect(T![fn]);
+        }
+    })
 }
 
 pub(crate) fn parse_fn(p: &mut Parser<'_>) {

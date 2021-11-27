@@ -1,13 +1,40 @@
 use crate::{LspContext, Result};
 use serde::de::DeserializeOwned;
 
-pub(crate) struct NotificationDispatcher<'lcx> {
-    pub(crate) notif: Option<lsp_server::Notification>,
+pub(crate) struct RequestDispatcher<'lcx> {
+    pub(crate) req: Option<lsp_server::Request>,
     pub(crate) lcx: &'lcx mut LspContext,
 }
 
-// sum two numbers
-fn sum() {
+impl<'lcx> RequestDispatcher<'lcx> {
+    pub fn on<R>(
+        &mut self,
+        f: fn(&mut LspContext, R::Params) -> Result<R::Result>,
+    ) -> Result<&mut Self>
+    where
+        R: lsp_types::request::Request + 'static,
+        R::Params: DeserializeOwned + Send + 'static,
+    {
+        let req = match self.req.take() {
+            Some(req) if req.method == R::METHOD => req,
+            req => {
+                self.req = req;
+                return Ok(self);
+            }
+        };
+
+        let (request_id, params) =
+            req.extract::<R::Params>(R::METHOD).expect("invalid request parameters");
+
+        let res = f(self.lcx, params)?;
+        self.lcx.respond(request_id, res)?;
+        Ok(self)
+    }
+}
+
+pub(crate) struct NotificationDispatcher<'lcx> {
+    pub(crate) notif: Option<lsp_server::Notification>,
+    pub(crate) lcx: &'lcx mut LspContext,
 }
 
 impl<'lcx> NotificationDispatcher<'lcx> {

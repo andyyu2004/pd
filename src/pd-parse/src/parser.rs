@@ -1,16 +1,8 @@
 use pd_ds::token_set::TokenSet;
-use pd_lex::{Span, SyntaxError, Token, TokenSource};
-use pd_syntax::{ast, AstNode, SyntaxKind, SyntaxNode, T};
+use pd_lex::{Span, Token, TokenSource};
+use pd_syntax::{AstNode, SyntaxKind, T};
 
-use crate::parse::{self, Parse};
-
-// pub(crate) fn parse_source_file(token_source: &mut dyn TokenSource) -> Parse<ast::SourceFile> {
-// let mut parser = Parser::new(token_source);
-// parser.enter(SyntaxKind::SourceFile, |parser| {
-// parse::parse_fn(parser);
-// });
-// parser.finish()
-// }
+use crate::parse::Parse;
 
 pub struct Parser<'t> {
     source: &'t mut dyn TokenSource,
