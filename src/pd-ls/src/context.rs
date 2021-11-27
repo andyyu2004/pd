@@ -19,14 +19,12 @@ impl LspContext {
         Self { sender, acx: Default::default(), vfs: Default::default() }
     }
 
-    pub fn respond<R: Serialize>(&self, request_id: RequestId, res: R) -> Result<()> {
-        self.sender.send(Message::Response(Response::new_ok(request_id, res)))?;
-        Ok(())
+    pub fn respond<R: Serialize>(&self, request_id: RequestId, res: R) {
+        self.send(Response::new_ok(request_id, res));
     }
 
-    pub fn respond_err(&self, request_id: RequestId, code: ErrorCode, msg: String) -> Result<()> {
-        self.sender.send(Message::Response(Response::new_err(request_id, code as i32, msg)))?;
-        Ok(())
+    pub fn respond_err(&self, request_id: RequestId, code: ErrorCode, msg: String) {
+        self.send(Response::new_err(request_id, code as i32, msg));
     }
 
     pub fn next_event(&self, inbox: &Receiver<lsp_server::Message>) -> Option<Event> {
@@ -71,6 +69,18 @@ impl LspContext {
         );
 
         Ok(())
+    }
+
+    pub(crate) fn send_notification<N: lsp_types::notification::Notification>(
+        &mut self,
+        params: N::Params,
+    ) {
+        let notif = lsp_server::Notification::new(N::METHOD.to_string(), params);
+        self.send(notif);
+    }
+
+    fn send(&self, item: impl Into<lsp_server::Message>) {
+        self.sender.send(item.into()).unwrap();
     }
 
     fn syntax_tree(

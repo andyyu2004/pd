@@ -27,7 +27,7 @@ impl<'lcx> RequestDispatcher<'lcx> {
             req.extract::<R::Params>(R::METHOD).expect("invalid request parameters");
 
         let res = f(self.lcx, params)?;
-        self.lcx.respond(request_id, res)?;
+        self.lcx.respond(request_id, res);
         Ok(self)
     }
 }
