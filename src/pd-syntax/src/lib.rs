@@ -49,6 +49,7 @@ pub enum SyntaxKind {
 
     // Expressions
     BlockExpr,
+    Expr,
 
     SourceFile,
 

@@ -52,6 +52,12 @@ impl ParseNode for ast::Fn {
     }
 }
 
+impl ParseNode for ast::Expr {
+    fn parse(parser: &mut Parser<'_>) {
+        parse_expr(parser)
+    }
+}
+
 pub fn parse<N: ParseNode>(text: &str) -> Parse<N> {
     let mut token_source = TextTokenSource::from_text(text);
     let mut parser = Parser::new(&mut token_source);
@@ -76,7 +82,7 @@ pub(crate) fn parse_value_def(p: &mut Parser<'_>) {
         p.bump(T![let]);
         p.expect(T![Ident]);
         p.expect(T![=]);
-        expr(p)
+        parse_expr(p)
     })
 }
 
@@ -95,3 +101,6 @@ pub(crate) fn parse_params(p: &mut Parser<'_>) {
 pub(crate) fn parse_block(p: &mut Parser<'_>) {
     p.enter(T![Stmts], |_| {});
 }
+
+#[cfg(test)]
+mod tests;

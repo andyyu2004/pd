@@ -2,15 +2,24 @@ use pd_lex::Span;
 use pd_syntax::{ast, T};
 
 use super::*;
-use crate::parse::parse;
+use crate::parse;
 use crate::parser::{ParseError, ParseErrorKind};
+
+#[macro_export]
+macro_rules! parse_success {
+    ($ty:ty, $($tt:tt)*) => {{
+        let parsed = $crate::parse::<$ty>(stringify!($($tt)*));
+        assert!(parsed.errors().is_empty());
+        parsed.syntax()
+    }};
+}
 
 #[test]
 fn test_parse_ok_fn() {
-    let parsed = parse::parse::<ast::Fn>(stringify!(
-        fn main() {
-        }
-    ));
+    let syntax = parse_success! {
+        ast::Fn,
+        fn main() {}
+    };
 
     let expected = r#"Fn@0..13
   FnKw@0..2 "fn"
@@ -26,8 +35,8 @@ fn test_parse_ok_fn() {
     Stmts@12..12
     CloseBrace@12..13 "}"
 "#;
-    assert_eq!(expected, format!("{:#?}", parsed.syntax()));
-    assert!(parsed.errors().is_empty());
+
+    assert_eq!(expected, format!("{:#?}", syntax));
 }
 
 #[test]

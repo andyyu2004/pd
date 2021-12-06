@@ -35,5 +35,5 @@ pub trait SourceDatabase: salsa::Database {
 }
 
 fn parse_file(db: &dyn SourceDatabase, file_id: FileId) -> Parse<ast::SourceFile> {
-    parse::parse(&db.file_text(file_id))
+    parse(&db.file_text(file_id))
 }

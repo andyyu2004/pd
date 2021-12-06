@@ -2,7 +2,9 @@
 
 pub use self::parse::Parse;
 
-pub mod parse;
+mod parse;
+
+pub use parse::{parse, ParseNode};
 
 mod parser;
 

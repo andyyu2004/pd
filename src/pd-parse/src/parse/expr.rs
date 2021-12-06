@@ -13,6 +13,9 @@ pub(crate) fn literal(p: &mut Parser<'_>) -> bool {
     return true;
 }
 
-pub(super) fn expr(p: &mut Parser<'_>) {
-    literal(p);
+pub(super) fn parse_expr(p: &mut Parser<'_>) {
+    if literal(p) {
+    } else {
+        panic!()
+    }
 }

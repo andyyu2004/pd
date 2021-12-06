@@ -136,7 +136,7 @@ impl<'t> Parser<'t> {
         self.source.lookahead(n).kind() == kind
     }
 
-    fn current(&self) -> Token {
+    pub(crate) fn current(&self) -> Token {
         self.source.current()
     }
 
