@@ -3,6 +3,7 @@ use pd_syntax::{SyntaxKind::*, T};
 
 use crate::parser::Parser;
 
+pub(crate) const EXPR_FIRST: TokenSet = LITERAL_FIRST;
 pub(crate) const LITERAL_FIRST: TokenSet = TokenSet::new(&[T![true], T![false]]);
 
 pub(crate) fn literal(p: &mut Parser<'_>) -> bool {
@@ -16,6 +17,6 @@ pub(crate) fn literal(p: &mut Parser<'_>) -> bool {
 pub(super) fn parse_expr(p: &mut Parser<'_>) {
     if literal(p) {
     } else {
-        panic!()
+        panic!("{:?}", p.current())
     }
 }
