@@ -1,6 +1,8 @@
 mod expr;
+mod item;
 
 use expr::*;
+use item::*;
 
 use std::marker::PhantomData;
 use std::sync::Arc;
@@ -52,6 +54,13 @@ impl ParseNode for ast::Fn {
     }
 }
 
+impl ParseNode for ast::Item {
+    #[inline]
+    fn parse(parser: &mut Parser<'_>) {
+        parse_item(parser)
+    }
+}
+
 impl ParseNode for ast::Expr {
     fn parse(parser: &mut Parser<'_>) {
         parse_expr(parser)
@@ -74,15 +83,6 @@ pub(crate) fn parse_source_file(p: &mut Parser<'_>) {
         } else {
             p.expect(T![let]);
         }
-    })
-}
-
-pub(crate) fn parse_value_def(p: &mut Parser<'_>) {
-    p.enter(T![ValueDef], |p| {
-        p.bump(T![let]);
-        p.expect(T![Ident]);
-        p.expect(T![=]);
-        parse_expr(p)
     })
 }
 

@@ -5,18 +5,33 @@ use super::*;
 use crate::parse;
 use crate::parser::{ParseError, ParseErrorKind};
 
+/// Checks the conversion back to a string exactly matches the input string
 #[macro_export]
-macro_rules! parse_success {
+macro_rules! parse_reflexive {
     ($ty:ty, $($tt:tt)*) => {{
-        let parsed = $crate::parse::<$ty>(stringify!($($tt)*));
+        let src = stringify!($($tt)*);
+        let parsed = $crate::parse::<$ty>(src);
         assert!(parsed.errors().is_empty());
+        assert_eq!(src, parsed.syntax().to_string());
+    }};
+}
+
+/// Asserts a successful parse (no errors) and returns the syntax node.
+/// Includes a check of `parse_reflexive`
+#[macro_export]
+macro_rules! parse_syntax {
+    ($ty:ty, $($tt:tt)*) => {{
+        let src = stringify!($($tt)*);
+        let parsed = $crate::parse::<$ty>(src);
+        assert!(parsed.errors().is_empty());
+        assert_eq!(src, parsed.syntax().to_string());
         parsed.syntax()
     }};
 }
 
 #[test]
 fn test_parse_ok_fn() {
-    let syntax = parse_success! {
+    let syntax = parse_syntax! {
         ast::Fn,
         fn main() {}
     };

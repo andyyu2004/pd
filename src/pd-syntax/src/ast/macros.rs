@@ -1,4 +1,15 @@
 #[macro_export]
+
+macro_rules! node {
+    ($node:ident) => {
+        #[derive(Debug, Hash, Clone, PartialEq, Eq)]
+        pub struct $node {
+            pub node: SyntaxNode,
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! node_accessors {
     ($ty:ty {  $($ident:ident: $nodety:ty)* }) => {
         impl $ty {

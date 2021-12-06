@@ -41,6 +41,7 @@ pub enum SyntaxKind {
     Literal,
 
     // Items
+    Item,
     Fn,
     ValueDef,
 
