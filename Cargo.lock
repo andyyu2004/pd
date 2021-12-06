@@ -116,15 +116,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "indexed_vec"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd5390d1640d64a30efbbe9cd15cb9f472388b4d5693677c693a7bc9310c0d08"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "indexmap"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -133,6 +124,12 @@ dependencies = [
  "autocfg",
  "hashbrown",
 ]
+
+[[package]]
+name = "indexvec"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1aa9399748470f49e292c541327ea95349407c49723d4cd7e7688fa3d2ffcc9"
 
 [[package]]
 name = "instant"
@@ -288,7 +285,7 @@ dependencies = [
 name = "pd-db"
 version = "0.1.0"
 dependencies = [
- "indexed_vec",
+ "indexvec",
  "pd-parse",
  "pd-syntax",
  "salsa",
@@ -306,7 +303,7 @@ name = "pd-ide"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "indexed_vec",
+ "indexvec",
  "pd-db",
  "pd-parse",
  "pd-syntax",
@@ -329,8 +326,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
- "indexed_vec",
  "indexmap",
+ "indexvec",
  "lsp-server",
  "lsp-types",
  "pd-ide",

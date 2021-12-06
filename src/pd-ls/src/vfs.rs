@@ -1,4 +1,4 @@
-use indexed_vec::Idx;
+use indexvec::Idx;
 use pd_ide::FileId;
 use std::path::PathBuf;
 

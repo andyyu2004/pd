@@ -164,7 +164,7 @@ pub fn raw_tokens(src: &str) -> RawTokens<'_> {
     iter::from_fn(move || {
         let rustc_lexer::Token { kind, len } = match tokens.next() {
             Some(token) => token,
-            None => return Some((RawToken { offset, kind: T![EOF], len: 0 }, None)),
+            None => return Some((RawToken { offset, kind: T![Eof], len: 0 }, None)),
         };
         let range = Span::at(offset, len);
         let (kind, err) = token_kind_to_syntax_kind(kind, &src[range]);
@@ -207,15 +207,15 @@ fn token_kind_to_syntax_kind(
             TokenKind::Lt => T![<],
             TokenKind::Gt => T![>],
             // TokenKind::Semi => T![;],
-            // TokenKind::Comma => T![,],
+            TokenKind::Comma => T![,],
             // TokenKind::Dot => T![.],
             // TokenKind::At => T![@],
             // TokenKind::Pound => T![#],
             // TokenKind::Tilde => T![~],
             // TokenKind::Question => T![?],
-            // TokenKind::Colon => T![:],
+            TokenKind::Colon => T![:],
             // TokenKind::Dollar => T![$],
-            // TokenKind::Eq => T![=],
+            TokenKind::Eq => T![=],
             // TokenKind::Bang => T![!],
             // TokenKind::Minus => T![-],
             // TokenKind::And => T![&],
@@ -227,7 +227,7 @@ fn token_kind_to_syntax_kind(
             // TokenKind::Percent => T![%],
             // TokenKind::Unknown => ERROR,
             // TokenKind::UnknownPrefix => todo!(),
-            // TokenKind::Literal { kind, suffix_start } => todo!(),
+            TokenKind::Literal { kind, suffix_start } => Literal,
             // TokenKind::Lifetime { starts_with_number } => todo!(),
             kind => todo!("{:?}", kind),
         }

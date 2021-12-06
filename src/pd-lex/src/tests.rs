@@ -27,17 +27,17 @@ fn test_raw_lexer() {
     });
 
     next!(fn:0:2);
-    next!(WS:2:1);
-    next!(IDENT:3:4);
+    next!(Whitespace:2:1);
+    next!(Ident:3:4);
     next!('(':7:1);
     next!(')':8:1);
-    next!(WS:9:1);
+    next!(Whitespace:9:1);
     next!('{':10:1);
-    next!(WS:11:1);
+    next!(Whitespace:11:1);
     next!('}':12:1);
-    next!(EOF:13:0);
-    next!(EOF:13:0);
-    next!(EOF:13:0);
+    next!(Eof:13:0);
+    next!(Eof:13:0);
+    next!(Eof:13:0);
 }
 
 macro_rules! check_eq {
@@ -60,31 +60,31 @@ fn test_text_token_source() {
     // Current should not move source
     check_eq!(src.current(), fn:false);
     src.bump();
-    check_eq!(src.current(), WS:false);
+    check_eq!(src.current(), Whitespace:false);
 
     assert_eq!(src.current(), src.lookahead(0));
     assert_eq!(src.lookahead(0), src.current());
-    check_eq!(src.lookahead(1), IDENT:false);
+    check_eq!(src.lookahead(1), Ident:false);
     // looking ahead multiple times shouldn't accumulate
-    check_eq!(src.lookahead(1), IDENT:false);
-    check_eq!(src.lookahead(7), IDENT:false);
-    check_eq!(src.lookahead(8), WS:false);
+    check_eq!(src.lookahead(1), Ident:false);
+    check_eq!(src.lookahead(7), Ident:false);
+    check_eq!(src.lookahead(8), Whitespace:false);
     check_eq!(src.lookahead(9), >:true);
     check_eq!(src.lookahead(10), >:false);
-    check_eq!(src.lookahead(11), WS:false);
+    check_eq!(src.lookahead(11), Whitespace:false);
 }
 
 #[test]
 fn test_text_token_source_detect_joint_token() {
     let src = stringify!(x >> y);
     raw_tokens!(src);
-    next!(IDENT:0:1);
-    next!(WS:1:1);
+    next!(Ident:0:1);
+    next!(Whitespace:1:1);
     next!(>:2:1);
     next!(>:3:1);
-    next!(WS:4:1);
-    next!(IDENT:5:1);
-    next!(EOF:6:0);
+    next!(Whitespace:4:1);
+    next!(Ident:5:1);
+    next!(Eof:6:0);
 
     let mut src = token_source!(src);
     check_eq!(src.lookahead(2), >:true);
@@ -94,9 +94,9 @@ fn test_text_token_source_detect_joint_token() {
 #[test]
 fn test_trivia_are_not_joint() {
     let mut src = token_source!(" x   y ");
-    check_eq!(src.lookahead(0), WS:false);
-    check_eq!(src.lookahead(1), IDENT:false);
+    check_eq!(src.lookahead(0), Whitespace:false);
+    check_eq!(src.lookahead(1), Ident:false);
     // Multiple whitespaces get compressed by rustc_lexer
-    check_eq!(src.lookahead(2), WS:false);
-    check_eq!(src.lookahead(3), IDENT:false);
+    check_eq!(src.lookahead(2), Whitespace:false);
+    check_eq!(src.lookahead(3), Ident:false);
 }

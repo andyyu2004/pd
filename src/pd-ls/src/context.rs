@@ -41,7 +41,15 @@ impl LspContext {
                 lsp_server::Message::Response(res) => self.handle_response(res),
                 lsp_server::Message::Notification(notif) => self.handle_notif(notif),
             },
-        }
+        }?;
+
+        let uri = todo!();
+        let diagnostics = todo!();
+        let version = todo!();
+        self.send_notification::<lsp_types::notification::PublishDiagnostics>(
+            lsp_types::PublishDiagnosticsParams { uri, diagnostics, version },
+        );
+        Ok(())
     }
 
     pub(crate) fn handle_request(&mut self, req: lsp_server::Request) -> Result<()> {

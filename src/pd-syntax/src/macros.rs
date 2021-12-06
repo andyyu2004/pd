@@ -9,7 +9,12 @@ macro_rules! make_tokens {
             ('[') => {{ $crate::SyntaxKind::OpenBracket }};
             (']') => {{ $crate::SyntaxKind::CloseBracket }};
 
-            $(($tt) => {{ $crate::SyntaxKind::$variant }});*
+            $(($tt) => {{ $crate::SyntaxKind::$variant }});*;
+
+            // forward identifiers to SyntaxKind
+            // i.e. T![Ws] == SyntaxKind::Ws
+            ($ident:ident) => {{ $crate::SyntaxKind::$ident }};
+
         }
     };
 }
@@ -33,24 +38,21 @@ macro_rules! make_kw {
 make_tokens! {
     fn => FnKw,
     type => TypeKw,
+    let => LetKw,
+    false => FalseKw,
+    true => TrueKw,
 
     < => LeftAngle,
     > => RightAngle,
-    IDENT => Ident,
-    PARAMS => Params,
-    WS => Whitespace,
-    EOF => Eof,
-    ERROR => Error,
-
-    FN => Fn,
-    STMTS => Stmts,
-
-    BLOCK_EXPR => BlockExpr,
+    = => Equal,
+    , => Comma,
+    : => Colon,
 }
 
 make_kw! {
     fn => FnKw,
     type => TypeKw,
+    let => LetKw,
 }
 
 #[cfg(test)]

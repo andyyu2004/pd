@@ -1,5 +1,5 @@
 use anyhow::Result;
-use indexed_vec::Idx;
+use indexvec::Idx;
 
 use super::*;
 

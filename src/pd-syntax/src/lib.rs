@@ -19,10 +19,16 @@ pub enum SyntaxKind {
     Underscore,
     LeftAngle,
     RightAngle,
+    Equal,
+    Comma,
+    Colon,
 
     // Keywords
     FnKw,
     TypeKw,
+    LetKw,
+    FalseKw,
+    TrueKw,
 
     // Misc
     Comment,
@@ -32,9 +38,11 @@ pub enum SyntaxKind {
 
     // Nodes
     Params,
+    Literal,
 
     // Items
     Fn,
+    ValueDef,
 
     // Statements
     Stmts,

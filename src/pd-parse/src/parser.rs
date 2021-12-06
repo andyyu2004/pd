@@ -116,11 +116,15 @@ impl<'t> Parser<'t> {
     }
 
     pub fn error_node(&mut self, s: String) {
-        self.enter(T![ERROR], |p| {
+        self.enter(T![Error], |p| {
             let text = p.source.current_text();
-            p.builder.token(T![ERROR].to_raw(), text);
+            p.builder.token(T![Error].to_raw(), text);
             p.bump_any();
         })
+    }
+
+    pub fn at_any(&mut self, kinds: TokenSet) -> bool {
+        kinds.contains(self.current().kind())
     }
 
     pub fn at(&mut self, kind: SyntaxKind) -> bool {
