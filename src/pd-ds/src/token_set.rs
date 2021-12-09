@@ -16,11 +16,15 @@ impl TokenSet {
         Self(k)
     }
 
-    pub fn union(self, other: Self) -> Self {
+    pub const fn union(self, other: Self) -> Self {
         Self(self.0 | other.0)
     }
 
-    pub fn contains(&self, kind: SyntaxKind) -> bool {
+    pub const fn with(self, kind: SyntaxKind) -> Self {
+        Self(self.0 | mask(kind))
+    }
+
+    pub const fn contains(&self, kind: SyntaxKind) -> bool {
         self.0 & mask(kind) != 0
     }
 }

@@ -8,6 +8,7 @@ pub struct Parser<'t> {
     source: &'t mut dyn TokenSource,
     builder: rowan::GreenNodeBuilder<'static>,
     errors: Vec<ParseError>,
+    steps: usize,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -21,11 +22,17 @@ pub enum ParseErrorKind {
     Expected(SyntaxKind),
     ExpectedWithMsg(SyntaxKind, &'static str),
     Message(String),
+    StaticMsg(&'static str),
 }
 
 impl<'t> Parser<'t> {
     pub fn new(source: &'t mut dyn TokenSource) -> Self {
-        Self { source, builder: Default::default(), errors: Default::default() }
+        Self {
+            source,
+            builder: Default::default(),
+            errors: Default::default(),
+            steps: Default::default(),
+        }
     }
 
     pub fn finish<T: AstNode>(mut self) -> Parse<T> {
@@ -47,7 +54,7 @@ impl<'t> Parser<'t> {
 
     pub fn in_parens(&mut self, kind: SyntaxKind, f: impl FnOnce(&mut Self)) {
         if !self.at(T!['(']) {
-            return self.error(ParseErrorKind::Expected(T!['(']));
+            return self.push_error(ParseErrorKind::Expected(T!['(']));
         }
         self.enter(kind, |p| {
             p.bump(T!['(']);
@@ -58,7 +65,7 @@ impl<'t> Parser<'t> {
 
     pub fn in_braces(&mut self, kind: SyntaxKind, f: impl FnOnce(&mut Self)) {
         if !self.at(T!['{']) {
-            return self.error(ParseErrorKind::Expected(T!['{']));
+            return self.push_error(ParseErrorKind::Expected(T!['{']));
         }
         self.enter(kind, |p| {
             p.bump(T!['{']);
@@ -74,6 +81,8 @@ impl<'t> Parser<'t> {
     }
 
     pub fn bump_any(&mut self) {
+        self.steps += 1;
+        assert!(self.steps < 10000, "stuck");
         let current = self.current();
         self.builder.token(current.kind().to_raw(), &self.source.text()[current.span()]);
         self.source.bump();
@@ -95,10 +104,25 @@ impl<'t> Parser<'t> {
         self.expect_recover(kind, TokenSet::EMPTY)
     }
 
-    pub(crate) fn expect_with_msg(&mut self, kind: SyntaxKind, msg: &'static str) {
-        if !self.expect(kind) {
-            self.error(ParseErrorKind::ExpectedWithMsg(kind, msg));
+    pub(crate) fn error(&mut self, msg: &'static str) {
+        self.push_error(ParseErrorKind::StaticMsg(msg));
+    }
+
+    pub(crate) fn expect_with_msg(&mut self, kind: SyntaxKind, msg: &'static str) -> bool {
+        self.expect_recover_with_msg(kind, TokenSet::EMPTY, msg)
+    }
+
+    pub(crate) fn expect_recover_with_msg(
+        &mut self,
+        kind: SyntaxKind,
+        recovery: TokenSet,
+        msg: &'static str,
+    ) -> bool {
+        if !self.expect_recover(kind, recovery) {
+            self.push_error(ParseErrorKind::ExpectedWithMsg(kind, msg));
+            return false;
         }
+        true
     }
 
     pub fn expect_recover(&mut self, kind: SyntaxKind, recovery: TokenSet) -> bool {
@@ -113,10 +137,10 @@ impl<'t> Parser<'t> {
         if recovery.contains(self.source.current().kind()) {
             return;
         }
-        self.error_node(format!("e"));
+        self.error_node(format!("todo error node"));
     }
 
-    fn error(&mut self, kind: ParseErrorKind) {
+    fn push_error(&mut self, kind: ParseErrorKind) {
         let offset = self.current().span().start();
         let span = Span::zero_sized(offset);
         self.errors.push(ParseError { span, kind })

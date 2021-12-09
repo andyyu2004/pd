@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-salsa = "0.17.0-pre.2"
 anyhow = "1"
+expect-test = "1"
 indexvec = "0.5"
+salsa = "0.17.0-pre.2"
 
 [dependencies.pd-parse]
 path = "../pd-parse"
@@ -16,3 +17,4 @@ path = "../pd-syntax"
 
 [dependencies.pd-db]
 path = "../pd-db"
+

@@ -74,10 +74,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "dissimilar"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "31ad93652f40969dead8d4bf897a41e9462095152eb21c56e5830537e41179dd"
+
+[[package]]
 name = "drop_bomb"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9bda8e21c04aca2ae33ffc2fd8c23134f3cac46db123ba97bd9d3f3b8a4a85e1"
+
+[[package]]
+name = "expect-test"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ffc5e8bf4af3ae147a7797c5d0566d9f038e49179213e29f44ddb031aea96c7"
+dependencies = [
+ "dissimilar",
+ "once_cell",
+]
 
 [[package]]
 name = "form_urlencoded"
@@ -310,6 +326,7 @@ name = "pd-ide"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "expect-test",
  "indexvec",
  "pd-db",
  "pd-parse",
@@ -357,6 +374,7 @@ dependencies = [
 name = "pd-parse"
 version = "0.1.0"
 dependencies = [
+ "expect-test",
  "pd-ds",
  "pd-lex",
  "pd-syntax",

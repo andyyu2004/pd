@@ -1,5 +1,12 @@
 use super::*;
 
+impl ParseError {
+    pub(crate) const FN_DEF_REQUIRES_PARAM: &'static str =
+        "function definitions require at least one parameter";
+    pub(crate) const FN_DEF_REQUIRES_TYPE: &'static str =
+        "function definitions require a type annotation";
+}
+
 pub(crate) fn parse_item(p: &mut Parser<'_>) {
     if p.at(T![let]) {
         parse_value_def(p)
@@ -31,17 +38,14 @@ pub(crate) fn parse_fn_def(p: &mut Parser<'_>) {
         p.bump(T![fn]);
         p.expect(T![Ident]);
         parse_params(p);
+        if p.expect_recover_with_msg(
+            T![:],
+            TYPE_FIRST.with(T![=]),
+            ParseError::FN_DEF_REQUIRES_TYPE,
+        ) {
+            parse_type(p);
+        }
         p.expect_recover(T![=], EXPR_FIRST);
         parse_expr(p);
     });
-}
-
-pub(crate) fn parse_params(p: &mut Parser<'_>) {
-    p.enter(T![Params], |p| {
-        while !p.at(T![:]) || p.at(T![=]) {
-            parse_pat(p);
-        }
-        p.expect_with_msg(T![:], "function definitions require at least one parameter");
-        parse_type(p);
-    })
 }
