@@ -1,10 +1,12 @@
 mod expr;
 mod item;
+mod pat;
 mod path;
 mod ty;
 
 use expr::*;
 use item::*;
+use pat::*;
 use path::*;
 use ty::*;
 
@@ -54,7 +56,7 @@ impl ParseNode for ast::SourceFile {
 impl ParseNode for ast::Fn {
     #[inline]
     fn parse(parser: &mut Parser<'_>) {
-        parse_fn(parser)
+        parse_fn_def(parser)
     }
 }
 
@@ -81,29 +83,13 @@ pub fn parse<N: ParseNode>(text: &str) -> Parse<N> {
 pub(crate) fn parse_source_file(p: &mut Parser<'_>) {
     p.enter(SyntaxKind::SourceFile, |p| {
         if p.at(T![fn]) {
-            parse_fn(p)
+            parse_fn_def(p)
         } else if p.at(T![let]) {
             parse_value_def(p)
         } else {
             p.expect(T![let]);
         }
     })
-}
-
-pub(crate) fn parse_fn(p: &mut Parser<'_>) {
-    p.enter(T![Fn], |p| {
-        p.bump(T![fn]);
-        p.expect(T![Ident]);
-        p.in_parens(T![Params], parse_params);
-        p.in_braces(T![BlockExpr], parse_block);
-    });
-}
-
-pub(crate) fn parse_params(p: &mut Parser<'_>) {
-}
-
-pub(crate) fn parse_block(p: &mut Parser<'_>) {
-    p.enter(T![Stmts], |_| {});
 }
 
 #[cfg(test)]

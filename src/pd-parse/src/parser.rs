@@ -19,6 +19,7 @@ pub struct ParseError {
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseErrorKind {
     Expected(SyntaxKind),
+    ExpectedWithMsg(SyntaxKind, &'static str),
     Message(String),
 }
 
@@ -92,6 +93,12 @@ impl<'t> Parser<'t> {
     #[inline]
     pub fn expect(&mut self, kind: SyntaxKind) -> bool {
         self.expect_recover(kind, TokenSet::EMPTY)
+    }
+
+    pub(crate) fn expect_with_msg(&mut self, kind: SyntaxKind, msg: &'static str) {
+        if !self.expect(kind) {
+            self.error(ParseErrorKind::ExpectedWithMsg(kind, msg));
+        }
     }
 
     pub fn expect_recover(&mut self, kind: SyntaxKind, recovery: TokenSet) -> bool {

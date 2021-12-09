@@ -1,5 +1,4 @@
 #[macro_export]
-
 macro_rules! node {
     ($node:ident) => {
         #[derive(Debug, Hash, Clone, PartialEq, Eq)]
@@ -55,5 +54,13 @@ macro_rules! impl_ast_node {
                 write!(f, "{}", self.syntax())
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! ast_node {
+    ($node:ident) => {
+        node!($node);
+        impl_ast_node!($node: $node);
     };
 }

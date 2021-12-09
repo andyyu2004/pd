@@ -20,3 +20,14 @@ pub(super) fn parse_expr(p: &mut Parser<'_>) {
         panic!("{:?}", p.current())
     }
 }
+
+pub(crate) fn parse_block(p: &mut Parser<'_>) {
+    p.in_braces(T![BlockExpr], |p| {
+        p.enter(T![Exprs], |p| {
+            while p.at(T!['}']) {
+                parse_expr(p);
+            }
+            p.bump(T!['}']);
+        })
+    });
+}

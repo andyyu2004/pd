@@ -47,12 +47,12 @@ pub enum SyntaxKind {
     Fn,
     ValueDef,
 
-    // Statements
-    Stmts,
-
     // Expressions
+    Exprs,
     BlockExpr,
-    Expr,
+
+    // Patterns
+    Pat,
 
     SourceFile,
 

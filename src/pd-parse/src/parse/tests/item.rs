@@ -53,3 +53,10 @@ fn test_parse_item_value_def_missing_equal() {
 "#;
     assert_eq!(format!("{:#?}", parsed.syntax()), expected);
 }
+
+#[test]
+fn test_parse_fn_def() {
+    let parsed = parse::<ast::Item>(stringify!(fn f x = false));
+    let expected = "";
+    assert_eq!(format!("{:#?}", parsed.syntax()), expected);
+}
