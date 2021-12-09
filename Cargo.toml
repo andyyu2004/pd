@@ -1,10 +1,11 @@
 [workspace]
 members = [
-    "src/pd-syntax",
-    "src/pd-parse",
-    "src/pd-lex",
-    "src/pd-ds",
-    "src/pd-ls",
-    "src/pd-ide",
     "src/pd-db",
+    "src/pd-ds",
+    "src/pd-ide",
+    "src/pd-ir",
+    "src/pd-lex",
+    "src/pd-ls",
+    "src/pd-parse",
+    "src/pd-syntax",
 ]

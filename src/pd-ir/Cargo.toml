@@ -1,17 +1,11 @@
 [package]
-name = "pd-db"
+name = "pd-ir"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+paste = "1"
 salsa = "0.17.0-pre.2"
-indexvec = "0.5"
-
-[dependencies.pd-parse]
-path = "../pd-parse"
 
 [dependencies.pd-syntax]
 path = "../pd-syntax"
-
-[dependencies.pd-ir]
-path = "../pd-ir"

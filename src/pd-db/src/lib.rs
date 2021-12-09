@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 newtype_index!(pub FileId);
 
-#[salsa::database(SourceDatabaseStorage)]
+#[salsa::database(SourceDatabaseStorage, pd_ir::InternDatabaseStorage)]
 #[derive(Default)]
 pub struct RootDatabase {
     storage: salsa::Storage<Self>,
