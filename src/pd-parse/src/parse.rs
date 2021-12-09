@@ -1,8 +1,12 @@
 mod expr;
 mod item;
+mod path;
+mod ty;
 
 use expr::*;
 use item::*;
+use path::*;
+use ty::*;
 
 use std::marker::PhantomData;
 use std::sync::Arc;

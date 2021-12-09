@@ -39,6 +39,8 @@ pub enum SyntaxKind {
     // Nodes
     Params,
     Literal,
+    Type,
+    Path,
 
     // Items
     Item,
