@@ -67,10 +67,12 @@ fn test_parse_fn_def() {
           Ident@3..4 "f"
           Whitespace@4..5 " "
           Params@5..9
-            Ident@5..6 "x"
-            Whitespace@6..7 " "
-            Ident@7..8 "y"
-            Whitespace@8..9 " "
+            Pat@5..7
+              Ident@5..6 "x"
+              Whitespace@6..7 " "
+            Pat@7..9
+              Ident@7..8 "y"
+              Whitespace@8..9 " "
           Colon@9..10 ":"
           Whitespace@10..11 " "
           Type@11..13
@@ -100,8 +102,9 @@ fn test_parse_ok_fn() {
           Ident@3..4 "f"
           Whitespace@4..5 " "
           Params@5..7
-            Ident@5..6 "x"
-            Whitespace@6..7 " "
+            Pat@5..7
+              Ident@5..6 "x"
+              Whitespace@6..7 " "
           Colon@7..8 ":"
           Whitespace@8..9 " "
           Type@9..11

@@ -18,6 +18,7 @@ pub(crate) fn parse_params(p: &mut Parser<'_>) {
 }
 
 pub(crate) fn parse_pat(p: &mut Parser<'_>) {
-    // p.enter(T![PAT])
-    p.expect(T![Ident]);
+    p.enter(T![Pat], |p| {
+        p.expect(T![Ident]);
+    });
 }
