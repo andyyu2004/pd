@@ -5,7 +5,11 @@ edition = "2021"
 
 [dependencies]
 expect-test = "1"
+salsa = "0.17.0-pre.2"
 rowan = "0.15.0"
+
+[dependencies.pd-base-db]
+path = "../pd-base-db/"
 
 [dependencies.pd-ds]
 path = "../pd-ds/"
@@ -15,3 +19,6 @@ path = "../pd-lex/"
 
 [dependencies.pd-syntax]
 path = "../pd-syntax/"
+
+[dependencies.pd-vfs]
+path = "../pd-vfs/"

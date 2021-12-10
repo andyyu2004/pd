@@ -7,6 +7,9 @@ edition = "2021"
 paste = "1"
 salsa = "0.17.0-pre.2"
 
+[dependencies.pd-parse]
+path = "../pd-parse"
+
 [dependencies.pd-syntax]
 path = "../pd-syntax"
 

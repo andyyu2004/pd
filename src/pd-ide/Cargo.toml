@@ -9,6 +9,9 @@ expect-test = "1"
 indexvec = "0.5"
 salsa = "0.17.0-pre.2"
 
+[dependencies.pd-base-db]
+path = "../pd-base-db"
+
 [dependencies.pd-db]
 path = "../pd-db"
 

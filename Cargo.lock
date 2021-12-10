@@ -304,10 +304,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0744126afe1a6dd7f394cb50a716dbe086cb06e255e53d8d0185d82828358fb5"
 
 [[package]]
+name = "pd-base-db"
+version = "0.1.0"
+dependencies = [
+ "pd-vfs",
+ "salsa",
+]
+
+[[package]]
 name = "pd-db"
 version = "0.1.0"
 dependencies = [
  "indexvec",
+ "pd-base-db",
  "pd-ir",
  "pd-parse",
  "pd-syntax",
@@ -329,6 +338,7 @@ dependencies = [
  "anyhow",
  "expect-test",
  "indexvec",
+ "pd-base-db",
  "pd-db",
  "pd-parse",
  "pd-syntax",
@@ -341,6 +351,7 @@ name = "pd-ir"
 version = "0.1.0"
 dependencies = [
  "paste",
+ "pd-parse",
  "pd-syntax",
  "pd-vfs",
  "salsa",
@@ -378,10 +389,13 @@ name = "pd-parse"
 version = "0.1.0"
 dependencies = [
  "expect-test",
+ "pd-base-db",
  "pd-ds",
  "pd-lex",
  "pd-syntax",
+ "pd-vfs",
  "rowan",
+ "salsa",
 ]
 
 [[package]]

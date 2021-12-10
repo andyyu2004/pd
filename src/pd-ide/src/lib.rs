@@ -1,8 +1,9 @@
 use std::panic::UnwindSafe;
 use std::sync::Arc;
 
-use pd_db::{RootDatabase, SourceDatabase};
-use pd_parse::Parse;
+use pd_base_db::SourceDatabase;
+use pd_db::RootDatabase;
+use pd_parse::{AstDatabase, Parse};
 use pd_syntax::ast;
 use pd_vfs::FileId;
 
