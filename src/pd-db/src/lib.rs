@@ -1,10 +1,8 @@
-use indexvec::newtype_index;
 use pd_parse::{parse, Parse};
 use pd_syntax::ast;
+use pd_vfs::FileId;
 use salsa::{Database, Durability};
 use std::sync::Arc;
-
-newtype_index!(pub FileId);
 
 #[salsa::database(SourceDatabaseStorage, pd_ir::InternDatabaseStorage)]
 #[derive(Default)]

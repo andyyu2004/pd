@@ -8,4 +8,5 @@ members = [
     "src/pd-ls",
     "src/pd-parse",
     "src/pd-syntax",
+    "src/pd-vfs",
 ]

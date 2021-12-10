@@ -5,7 +5,6 @@ mod capabilities;
 mod context;
 mod dispatch;
 mod lsp_ext;
-mod vfs;
 
 use anyhow::Result;
 use context::LspContext;

@@ -1,11 +1,11 @@
 use super::{Event, Result};
 use crate::dispatch::{NotificationDispatcher, RequestDispatcher};
 use crate::lsp_ext;
-use crate::vfs::Vfs;
 use crossbeam_channel::{select, Receiver, Sender};
 use lsp_server::{ErrorCode, Message, RequestId, Response};
 use lsp_types::request::Request;
-use pd_ide::{Analysis, AnalysisCtxt, Change, FileChange};
+use pd_ide::{AnalysisCtxt, Change, FileChange};
+use pd_vfs::Vfs;
 use serde::Serialize;
 
 pub(crate) struct LspContext {

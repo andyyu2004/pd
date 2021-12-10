@@ -1,11 +1,11 @@
 use std::panic::UnwindSafe;
 use std::sync::Arc;
 
-pub use pd_db::FileId;
-
 use pd_db::{RootDatabase, SourceDatabase};
 use pd_parse::Parse;
 use pd_syntax::ast;
+use pd_vfs::FileId;
+
 use salsa::{Cancelled, ParallelDatabase};
 
 pub type Cancellable<T> = Result<T, Cancelled>;

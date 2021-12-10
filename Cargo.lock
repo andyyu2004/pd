@@ -311,6 +311,7 @@ dependencies = [
  "pd-ir",
  "pd-parse",
  "pd-syntax",
+ "pd-vfs",
  "salsa",
 ]
 
@@ -331,6 +332,7 @@ dependencies = [
  "pd-db",
  "pd-parse",
  "pd-syntax",
+ "pd-vfs",
  "salsa",
 ]
 
@@ -340,6 +342,7 @@ version = "0.1.0"
 dependencies = [
  "paste",
  "pd-syntax",
+ "pd-vfs",
  "salsa",
 ]
 
@@ -359,11 +362,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
- "indexmap",
  "indexvec",
  "lsp-server",
  "lsp-types",
  "pd-ide",
+ "pd-vfs",
  "serde",
  "serde_json",
  "tracing",
@@ -386,6 +389,14 @@ name = "pd-syntax"
 version = "0.1.0"
 dependencies = [
  "rowan",
+]
+
+[[package]]
+name = "pd-vfs"
+version = "0.1.0"
+dependencies = [
+ "indexmap",
+ "indexvec",
 ]
 
 [[package]]

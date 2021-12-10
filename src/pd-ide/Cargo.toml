@@ -9,12 +9,16 @@ expect-test = "1"
 indexvec = "0.5"
 salsa = "0.17.0-pre.2"
 
+[dependencies.pd-db]
+path = "../pd-db"
+
 [dependencies.pd-parse]
 path = "../pd-parse"
 
 [dependencies.pd-syntax]
 path = "../pd-syntax"
 
-[dependencies.pd-db]
-path = "../pd-db"
+[dependencies.pd-vfs]
+path = "../pd-vfs"
+
 

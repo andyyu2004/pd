@@ -1,0 +1,8 @@
+[package]
+name = "pd-vfs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+indexmap = "1"
+indexvec = "0.5"

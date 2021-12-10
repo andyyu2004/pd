@@ -7,11 +7,14 @@ edition = "2021"
 salsa = "0.17.0-pre.2"
 indexvec = "0.5"
 
+[dependencies.pd-ir]
+path = "../pd-ir"
+
 [dependencies.pd-parse]
 path = "../pd-parse"
 
 [dependencies.pd-syntax]
 path = "../pd-syntax"
 
-[dependencies.pd-ir]
-path = "../pd-ir"
+[dependencies.pd-vfs]
+path = "../pd-vfs"
