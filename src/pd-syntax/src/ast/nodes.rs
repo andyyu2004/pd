@@ -10,6 +10,45 @@ node_accessors!(Fn { body: BlockExpr });
 ast_node!(BlockExpr);
 ast_node!(ValueDef);
 ast_node!(Literal);
+ast_node!(Binding);
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+pub enum Pat {
+    Binding(Binding),
+    Literal(Literal),
+}
+
+impl rowan::ast::AstNode for Pat {
+    type Language = PdLanguage;
+
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        match kind {
+            Literal => true,
+            _ => todo!(),
+        }
+    }
+
+    fn cast(node: rowan::SyntaxNode<Self::Language>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let pat = match node.kind() {
+            Literal => Pat::Literal(Literal { node }),
+            _ => todo!(),
+        };
+        Some(pat)
+    }
+
+    fn syntax(&self) -> &rowan::SyntaxNode<Self::Language> {
+        match self {
+            Pat::Literal(lit) => &lit.node,
+            Pat::Binding(binding) => &binding.node,
+        }
+    }
+}
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum Expr {

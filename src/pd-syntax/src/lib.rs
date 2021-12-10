@@ -52,7 +52,7 @@ pub enum SyntaxKind {
     BlockExpr,
 
     // Patterns
-    Pat,
+    Binding,
 
     SourceFile,
 

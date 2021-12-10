@@ -18,7 +18,9 @@ pub(crate) fn parse_params(p: &mut Parser<'_>) {
 }
 
 pub(crate) fn parse_pat(p: &mut Parser<'_>) {
-    p.enter(T![Pat], |p| {
-        p.expect(T![Ident]);
-    });
+    if p.at(T![Ident]) {
+        p.enter(T![Binding], |p| p.bump(T![Ident]));
+    } else {
+        todo!()
+    }
 }
