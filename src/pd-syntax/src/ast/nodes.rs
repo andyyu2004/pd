@@ -8,7 +8,7 @@ ast_node!(SourceFile);
 ast_node!(BlockExpr);
 ast_node!(ValueDef: HasType, HasName);
 ast_node!(Literal);
-ast_node!(Binding);
+ast_node!(BindingPat);
 ast_node!(Ident);
 ast_node!(PathType);
 
@@ -50,7 +50,7 @@ impl rowan::ast::AstNode for Type {
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum Pat {
-    Binding(Binding),
+    Binding(BindingPat),
     Literal(Literal),
 }
 

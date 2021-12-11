@@ -20,8 +20,9 @@ fn test_ide_parse() -> Result<()> {
           ValueDef@0..13
             LetKw@0..3 "let"
             Whitespace@3..4 " "
-            Ident@4..5 "x"
-            Whitespace@5..6 " "
+            BindingPat@4..6
+              Ident@4..5 "x"
+              Whitespace@5..6 " "
             Equal@6..7 "="
             Whitespace@7..8 " "
             Literal@8..13

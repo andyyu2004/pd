@@ -14,7 +14,7 @@ fn test_parse_item_value_def() {
         ValueDef@0..13
           LetKw@0..3 "let"
           Whitespace@3..4 " "
-          Binding@4..6
+          BindingPat@4..6
             Ident@4..5 "x"
             Whitespace@5..6 " "
           Equal@6..7 "="
@@ -33,7 +33,7 @@ fn test_parse_item_value_def_with_ty() {
         ValueDef@0..20
           LetKw@0..3 "let"
           Whitespace@3..4 " "
-          Binding@4..6
+          BindingPat@4..6
             Ident@4..5 "x"
             Whitespace@5..6 " "
           Colon@6..7 ":"
@@ -58,7 +58,7 @@ fn test_parse_item_value_def_missing_equal() {
         ValueDef@0..11
           LetKw@0..3 "let"
           Whitespace@3..4 " "
-          Binding@4..6
+          BindingPat@4..6
             Ident@4..5 "x"
             Whitespace@5..6 " "
           Literal@6..11
@@ -83,10 +83,10 @@ fn test_parse_fn_def() {
           Ident@3..4 "f"
           Whitespace@4..5 " "
           Params@5..9
-            Binding@5..7
+            BindingPat@5..7
               Ident@5..6 "x"
               Whitespace@6..7 " "
-            Binding@7..9
+            BindingPat@7..9
               Ident@7..8 "y"
               Whitespace@8..9 " "
           Colon@9..10 ":"
@@ -118,7 +118,7 @@ fn test_parse_ok_fn() {
           Ident@3..4 "f"
           Whitespace@4..5 " "
           Params@5..7
-            Binding@5..7
+            BindingPat@5..7
               Ident@5..6 "x"
               Whitespace@6..7 " "
           Colon@7..8 ":"

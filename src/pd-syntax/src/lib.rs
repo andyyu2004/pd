@@ -56,7 +56,7 @@ pub enum SyntaxKind {
     BlockExpr,
 
     // Patterns
-    Binding,
+    BindingPat,
 
     // Types
     PathType,
