@@ -1,4 +1,4 @@
-mod ir;
+pub mod ir;
 mod lower;
 mod macros;
 
@@ -20,6 +20,7 @@ pub trait InternDatabase {
 #[salsa::query_group(DefDatabaseStorage)]
 pub trait DefDatabase: InternDatabase + AstDatabase {
     fn file_items(&self, file_id: FileId) -> Arc<Items>;
+    fn value_def_data(&self, value_def: ValueDef) -> Arc<ValueDefData>;
 }
 
 fn file_items(db: &dyn DefDatabase, file_id: FileId) -> Arc<Items> {
@@ -28,9 +29,12 @@ fn file_items(db: &dyn DefDatabase, file_id: FileId) -> Arc<Items> {
     let source_file = node.cast::<ast::SourceFile>().expect("expected SourceFile");
     let items = source_file.find_children::<ast::Item>();
 
-    let lcx = LowerCtxt::new(db);
+    let mut lcx = LowerCtxt::new(db);
     let items = lcx.lower_items(items);
-    dbg!(&items);
+    Arc::new(items)
+}
+
+fn value_def_data(db: &dyn DefDatabase, value_def: ValueDef) -> Arc<ValueDefData> {
     todo!()
 }
 

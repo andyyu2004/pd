@@ -23,5 +23,6 @@ fn test_lower_items() {
     let mut db = TestDb::default();
     let file_id = FileId::new(0);
     db.set_file_text(file_id, Arc::new("let x = false".to_string()));
-    // dbg!(db.file_items(file_id));
+    let items = db.file_items(file_id);
+    assert_eq!(items.len(), 1);
 }

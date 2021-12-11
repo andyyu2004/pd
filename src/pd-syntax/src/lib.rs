@@ -97,13 +97,19 @@ impl Language for PdLanguage {
 }
 
 pub trait HasName: AstNode + Sized {
-    fn name(&self) -> Option<ast::Ident> {
+    fn name(&self) -> Option<ast::Name> {
         self.find_child()
     }
 }
 
 pub trait HasType: AstNode + Sized {
     fn ty(&self) -> Option<ast::Type> {
+        self.find_child()
+    }
+}
+
+pub trait HasPat: AstNode + Sized {
+    fn pat(&self) -> Option<ast::Pat> {
         self.find_child()
     }
 }

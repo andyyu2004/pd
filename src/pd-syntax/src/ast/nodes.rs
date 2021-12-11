@@ -6,10 +6,10 @@ node_accessors!(Fn { body: BlockExpr });
 
 ast_node!(SourceFile);
 ast_node!(BlockExpr);
-ast_node!(ValueDef: HasType, HasName);
+ast_node!(ValueDef: HasType, HasName, HasPat);
 ast_node!(Literal);
 ast_node!(BindingPat);
-ast_node!(Ident);
+ast_node!(Name);
 ast_node!(PathType);
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
