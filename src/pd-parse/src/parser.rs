@@ -118,19 +118,25 @@ impl<'t> Parser<'t> {
         recovery: TokenSet,
         msg: &'static str,
     ) -> bool {
-        if !self.expect_recover(kind, recovery) {
-            self.push_error(ParseErrorKind::ExpectedWithMsg(kind, msg));
+        self.expect_inner(kind, recovery, ParseErrorKind::ExpectedWithMsg(kind, msg))
+    }
+
+    pub fn expect_inner(
+        &mut self,
+        kind: SyntaxKind,
+        recovery: TokenSet,
+        err: ParseErrorKind,
+    ) -> bool {
+        if !self.accept(kind) {
+            self.push_error(err);
+            self.recover(kind, recovery);
             return false;
         }
         true
     }
 
     pub fn expect_recover(&mut self, kind: SyntaxKind, recovery: TokenSet) -> bool {
-        if !self.accept(kind) {
-            self.recover(kind, recovery);
-            return false;
-        }
-        true
+        self.expect_inner(kind, recovery, ParseErrorKind::Expected(kind))
     }
 
     pub fn recover(&mut self, expected: SyntaxKind, recovery: TokenSet) {

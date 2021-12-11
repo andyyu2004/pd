@@ -65,6 +65,11 @@ fn test_parse_item_value_def_missing_equal() {
             FalseKw@6..11 "false"
 
     "#]];
+    assert_eq!(parsed.errors().len(), 1);
+    assert_eq!(
+        parsed.errors()[0],
+        ParseError { span: Span::new(6, 6), kind: ParseErrorKind::Expected(T![=]) }
+    );
     expected.assert_debug_eq(&parsed.syntax());
 }
 
