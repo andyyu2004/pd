@@ -45,6 +45,7 @@ pub enum SyntaxKind {
     Literal,
     Type,
     Path,
+    Name,
 
     // Items
     Item,

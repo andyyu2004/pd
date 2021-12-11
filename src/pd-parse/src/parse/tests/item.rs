@@ -1,5 +1,3 @@
-use std::arch::x86_64::_MM_EXCEPT_INEXACT;
-
 use expect_test::expect;
 use pd_lex::Span;
 use pd_syntax::{ast, T};
@@ -15,8 +13,9 @@ fn test_parse_item_value_def() {
           LetKw@0..3 "let"
           Whitespace@3..4 " "
           BindingPat@4..6
-            Ident@4..5 "x"
-            Whitespace@5..6 " "
+            Name@4..6
+              Ident@4..5 "x"
+              Whitespace@5..6 " "
           Equal@6..7 "="
           Whitespace@7..8 " "
           Literal@8..13
@@ -34,8 +33,9 @@ fn test_parse_item_value_def_with_ty() {
           LetKw@0..3 "let"
           Whitespace@3..4 " "
           BindingPat@4..6
-            Ident@4..5 "x"
-            Whitespace@5..6 " "
+            Name@4..6
+              Ident@4..5 "x"
+              Whitespace@5..6 " "
           Colon@6..7 ":"
           Whitespace@7..8 " "
           Type@8..13
@@ -59,8 +59,9 @@ fn test_parse_item_value_def_missing_equal() {
           LetKw@0..3 "let"
           Whitespace@3..4 " "
           BindingPat@4..6
-            Ident@4..5 "x"
-            Whitespace@5..6 " "
+            Name@4..6
+              Ident@4..5 "x"
+              Whitespace@5..6 " "
           Literal@6..11
             FalseKw@6..11 "false"
 
@@ -80,15 +81,18 @@ fn test_parse_fn_def() {
         Fn@0..20
           FnKw@0..2 "fn"
           Whitespace@2..3 " "
-          Ident@3..4 "f"
-          Whitespace@4..5 " "
+          Name@3..5
+            Ident@3..4 "f"
+            Whitespace@4..5 " "
           Params@5..9
             BindingPat@5..7
-              Ident@5..6 "x"
-              Whitespace@6..7 " "
+              Name@5..7
+                Ident@5..6 "x"
+                Whitespace@6..7 " "
             BindingPat@7..9
-              Ident@7..8 "y"
-              Whitespace@8..9 " "
+              Name@7..9
+                Ident@7..8 "y"
+                Whitespace@8..9 " "
           Colon@9..10 ":"
           Whitespace@10..11 " "
           Type@11..13
@@ -115,12 +119,14 @@ fn test_parse_ok_fn() {
         Fn@0..18
           FnKw@0..2 "fn"
           Whitespace@2..3 " "
-          Ident@3..4 "f"
-          Whitespace@4..5 " "
+          Name@3..5
+            Ident@3..4 "f"
+            Whitespace@4..5 " "
           Params@5..7
             BindingPat@5..7
-              Ident@5..6 "x"
-              Whitespace@6..7 " "
+              Name@5..7
+                Ident@5..6 "x"
+                Whitespace@6..7 " "
           Colon@7..8 ":"
           Whitespace@8..9 " "
           Type@9..11
@@ -147,8 +153,9 @@ fn test_parse_fn_no_params() {
         Fn@0..16
           FnKw@0..2 "fn"
           Whitespace@2..3 " "
-          Ident@3..4 "x"
-          Whitespace@4..5 " "
+          Name@3..5
+            Ident@3..4 "x"
+            Whitespace@4..5 " "
           Params@5..5
           Colon@5..6 ":"
           Whitespace@6..7 " "
@@ -184,8 +191,9 @@ fn test_parse_fn_no_params_no_type() {
         Fn@0..12
           FnKw@0..2 "fn"
           Whitespace@2..3 " "
-          Ident@3..4 "x"
-          Whitespace@4..5 " "
+          Name@3..5
+            Ident@3..4 "x"
+            Whitespace@4..5 " "
           Params@5..5
           Equal@5..6 "="
           Whitespace@6..7 " "

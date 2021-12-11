@@ -33,11 +33,10 @@ fn test_raw_lexer() {
     next!(')':8:1);
     next!(Whitespace:9:1);
     next!('{':10:1);
-    next!(Whitespace:11:1);
-    next!('}':12:1);
-    next!(Eof:13:0);
-    next!(Eof:13:0);
-    next!(Eof:13:0);
+    next!('}':11:1);
+    next!(Eof:12:0);
+    next!(Eof:12:0);
+    next!(Eof:12:0);
 }
 
 macro_rules! check_eq {

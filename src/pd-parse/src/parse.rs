@@ -8,6 +8,7 @@ use expr::*;
 use item::*;
 use pat::*;
 use path::*;
+use pd_ds::token_set::TokenSet;
 use ty::*;
 
 use std::marker::PhantomData;
@@ -90,6 +91,16 @@ pub(crate) fn parse_source_file(p: &mut Parser<'_>) {
             p.expect(T![let]);
         }
     })
+}
+
+pub(crate) fn parse_name(p: &mut Parser<'_>) {
+    parse_name_recover(p, TokenSet::EMPTY)
+}
+
+pub(crate) fn parse_name_recover(p: &mut Parser<'_>, recovery: TokenSet) {
+    p.enter(T![Name], |p| {
+        p.expect_recover(T![Ident], recovery);
+    });
 }
 
 #[cfg(test)]

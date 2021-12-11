@@ -36,7 +36,7 @@ pub(crate) fn parse_value_def(p: &mut Parser<'_>) {
 pub(crate) fn parse_fn_def(p: &mut Parser<'_>) {
     p.enter(T![Fn], |p| {
         p.bump(T![fn]);
-        p.expect(T![Ident]);
+        parse_name(p);
         parse_params(p);
         if p.expect_recover_with_msg(
             T![:],
