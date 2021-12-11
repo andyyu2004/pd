@@ -1,9 +1,12 @@
+use crate::ast;
+use crate::AstNode;
+
 #[macro_export]
 macro_rules! node {
     ($node:ident) => {
         #[derive(Debug, Hash, Clone, PartialEq, Eq)]
         pub struct $node {
-            pub node: SyntaxNode,
+            pub node: $crate::SyntaxNode,
         }
     };
 }
@@ -23,20 +26,23 @@ macro_rules! node_accessors {
 
 #[macro_export]
 macro_rules! impl_ast_node {
+    ($ty:ident) => {
+        impl_ast_node!($ty: $ty);
+    };
     ($ty:ty: $kind:ident) => {
         impl rowan::ast::AstNode for $ty {
-            type Language = PdLanguage;
+            type Language = $crate::PdLanguage;
 
             #[inline]
-            fn can_cast(kind: SyntaxKind) -> bool
+            fn can_cast(kind: $crate::SyntaxKind) -> bool
             where
                 Self: Sized,
             {
-                kind == SyntaxKind::$kind
+                kind == $crate::SyntaxKind::$kind
             }
 
             #[inline]
-            fn cast(node: rowan::SyntaxNode<Self::Language>) -> Option<Self>
+            fn cast(node: $crate::rowan::SyntaxNode<Self::Language>) -> Option<Self>
             where
                 Self: Sized,
             {
@@ -44,7 +50,7 @@ macro_rules! impl_ast_node {
             }
 
             #[inline]
-            fn syntax(&self) -> &rowan::SyntaxNode<Self::Language> {
+            fn syntax(&self) -> &$crate::rowan::SyntaxNode<Self::Language> {
                 &self.node
             }
         }
@@ -59,8 +65,20 @@ macro_rules! impl_ast_node {
 
 #[macro_export]
 macro_rules! ast_node {
+    ($node:ident : $($trait:ident),+) => {
+        #[derive(Debug, Hash, Clone, PartialEq, Eq)]
+        pub struct $node {
+            pub node: $crate::SyntaxNode,
+        }
+
+        impl_ast_node!($node);
+
+        $(
+            impl $crate::ast::$trait for $node {}
+        )*
+    };
     ($node:ident) => {
         node!($node);
-        impl_ast_node!($node: $node);
+        impl_ast_node!($node);
     };
 }

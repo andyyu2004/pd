@@ -1,24 +1,23 @@
 use super::*;
 use SyntaxKind::*;
 
-node!(SourceFile);
-impl_ast_node!(SourceFile: SourceFile);
-
 ast_node!(Fn);
 node_accessors!(Fn { body: BlockExpr });
 
+ast_node!(SourceFile);
 ast_node!(BlockExpr);
-ast_node!(ValueDef);
+ast_node!(ValueDef: HasType, HasName);
 ast_node!(Literal);
 ast_node!(Binding);
+ast_node!(Ident);
+ast_node!(PathType);
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub enum Pat {
-    Binding(Binding),
-    Literal(Literal),
+pub enum Type {
+    Path(PathType),
 }
 
-impl rowan::ast::AstNode for Pat {
+impl rowan::ast::AstNode for Type {
     type Language = PdLanguage;
 
     fn can_cast(kind: SyntaxKind) -> bool
@@ -35,6 +34,47 @@ impl rowan::ast::AstNode for Pat {
     where
         Self: Sized,
     {
+        let ty = match node.kind() {
+            Path => Type::Path(PathType { node }),
+            _ => return None,
+        };
+        Some(ty)
+    }
+
+    fn syntax(&self) -> &rowan::SyntaxNode<Self::Language> {
+        match self {
+            Type::Path(path) => &path.node,
+        }
+    }
+}
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+pub enum Pat {
+    Binding(Binding),
+    Literal(Literal),
+}
+
+impl rowan::ast::AstNode for Pat {
+    type Language = PdLanguage;
+
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        match kind {
+            Literal => true,
+            _ => false,
+        }
+    }
+
+    fn cast(node: rowan::SyntaxNode<Self::Language>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if !Self::can_cast(node.kind()) {
+            return None;
+        }
+
         let pat = match node.kind() {
             Literal => Pat::Literal(Literal { node }),
             _ => todo!(),

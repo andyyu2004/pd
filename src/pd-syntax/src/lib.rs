@@ -1,8 +1,12 @@
+#![feature(type_alias_impl_trait, trait_alias)]
+
 pub mod ast;
 mod macros;
 
-use rowan::ast::AstNode as _;
-use rowan::Language;
+// This needs to be imported for rust-analyzers sake (autocomplete etc) as trait aliases are not fully implemented
+pub use rowan::ast::AstNode as AstMethods;
+
+use rowan::{self, Language};
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -54,6 +58,9 @@ pub enum SyntaxKind {
     // Patterns
     Binding,
 
+    // Types
+    PathType,
+
     SourceFile,
 
     #[doc(hidden)]
@@ -78,26 +85,53 @@ pub struct PdLanguage;
 impl Language for PdLanguage {
     type Kind = SyntaxKind;
 
-    #[inline]
     fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
         assert!(raw.0 <= SyntaxKind::__Last as u16);
         unsafe { std::mem::transmute(raw.0) }
     }
 
-    #[inline]
     fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
         kind.to_raw()
     }
 }
 
-pub trait AstNode: rowan::ast::AstNode<Language = PdLanguage> {
-    #[inline]
-    fn find_child<N: AstNode>(&self) -> Option<N> {
-        self.syntax().children().find_map(N::cast)
+pub trait HasName: AstNode + Sized {
+    fn name(&self) -> Option<ast::Ident> {
+        self.find_child()
     }
 }
 
-impl<N: rowan::ast::AstNode<Language = PdLanguage>> AstNode for N {
+pub trait HasType: AstNode + Sized {
+    fn ty(&self) -> Option<ast::Type> {
+        self.find_child()
+    }
 }
 
+pub type AstChildren<N: AstNode> = impl Iterator<Item = N> + std::fmt::Debug;
+
+pub trait AstNodeExt: rowan::ast::AstNode<Language = PdLanguage> {
+    fn find_child<N: AstNode>(&self) -> Option<N> {
+        self.syntax().children().find_map(N::cast)
+    }
+
+    fn find_children<N: AstNode>(&self) -> AstChildren<N> {
+        self.syntax().children().filter_map(N::cast)
+    }
+}
+
+impl<N: rowan::ast::AstNode<Language = PdLanguage>> AstNodeExt for N {
+}
+
+pub trait AstNode = rowan::ast::AstNode<Language = PdLanguage>;
+
 pub type SyntaxNode = rowan::SyntaxNode<PdLanguage>;
+
+pub trait SyntaxNodeExt: Sized {
+    fn cast<N: AstNode>(self) -> Option<N>;
+}
+
+impl SyntaxNodeExt for SyntaxNode {
+    fn cast<N: AstNode>(self) -> Option<N> {
+        N::cast(self)
+    }
+}

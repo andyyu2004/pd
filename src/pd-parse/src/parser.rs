@@ -1,6 +1,6 @@
 use pd_ds::token_set::TokenSet;
 use pd_lex::{Span, Token, TokenSource};
-use pd_syntax::{AstNode, SyntaxKind, T};
+use pd_syntax::{AstNodeExt, SyntaxKind, T};
 
 use crate::parse::Parse;
 
@@ -35,7 +35,7 @@ impl<'t> Parser<'t> {
         }
     }
 
-    pub fn finish<T: AstNode>(mut self) -> Parse<T> {
+    pub fn finish<T: AstNodeExt>(mut self) -> Parse<T> {
         let node = self.builder.finish();
         self.errors.extend(
             self.source

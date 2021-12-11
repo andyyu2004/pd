@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use pd_lex::TextTokenSource;
-use pd_syntax::{ast, AstNode, SyntaxKind, SyntaxNode, T};
+use pd_syntax::{ast, AstNodeExt, SyntaxKind, SyntaxNode, T};
 use rowan::GreenNode;
 
 use crate::parser::{ParseError, Parser};
@@ -42,7 +42,7 @@ impl<T> Parse<T> {
     }
 }
 
-pub trait ParseNode: AstNode {
+pub trait ParseNode: AstNodeExt {
     fn parse(_: &mut Parser<'_>);
 }
 
