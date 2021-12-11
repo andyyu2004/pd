@@ -24,5 +24,4 @@ fn test_lower_items() {
     let file_id = FileId::new(0);
     db.set_file_text(file_id, Arc::new("let x = false".to_string()));
     let items = db.file_items(file_id);
-    assert_eq!(items.len(), 1);
 }

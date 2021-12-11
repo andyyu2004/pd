@@ -9,7 +9,7 @@ impl ParseError {
 
 pub(crate) fn parse_item(p: &mut Parser<'_>) {
     if p.at(T![let]) {
-        parse_value_def(p)
+        parse_const(p)
     } else if p.at(T![fn]) {
         parse_fn_def(p)
     } else {
@@ -19,8 +19,8 @@ pub(crate) fn parse_item(p: &mut Parser<'_>) {
 
 /// `let <pattern> = <expr>`
 /// Introduces a new non-recursive binding.
-pub(crate) fn parse_value_def(p: &mut Parser<'_>) {
-    p.enter(T![ValueDef], |p| {
+pub(crate) fn parse_const(p: &mut Parser<'_>) {
+    p.enter(T![Const], |p| {
         p.bump(T![let]);
         parse_pat(p);
         if p.accept(T![:]) {

@@ -1,7 +1,7 @@
 use la_arena::{Arena, Idx};
 use rustc_hash::FxHashMap;
 
-use crate::ir::{Items, Name, ValueDef};
+use crate::ir::{Const, Name};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Defs {
@@ -16,7 +16,7 @@ pub struct ModuleData {
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
 pub enum ModuleDefId {
-    ValueDef(ValueDef),
+    Const(Const),
 }
 
 pub type Pkg = Idx<PkgData>;

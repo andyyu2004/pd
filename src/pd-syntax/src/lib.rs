@@ -50,7 +50,7 @@ pub enum SyntaxKind {
     // Items
     Item,
     Fn,
-    ValueDef,
+    Const,
 
     // Expressions
     Exprs,

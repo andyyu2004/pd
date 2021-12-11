@@ -86,7 +86,7 @@ pub(crate) fn parse_source_file(p: &mut Parser<'_>) {
         if p.at(T![fn]) {
             parse_fn_def(p)
         } else if p.at(T![let]) {
-            parse_value_def(p)
+            parse_const(p)
         } else {
             p.expect(T![let]);
         }

@@ -1,7 +1,6 @@
 use la_arena::{Arena, Idx};
 use pd_syntax::ast;
-use pd_syntax::{AstChildren, AstMethods, HasPat, HasType};
-use smol_str::SmolStr;
+use pd_syntax::{AstChildren, HasPat, HasType};
 
 use crate::ir::*;
 use crate::DefDatabase;
@@ -12,8 +11,25 @@ pub(crate) struct LowerCtxt<'db> {
 }
 
 #[derive(Debug, Default, Eq, PartialEq)]
+pub struct Items {
+    indexes: Vec<Item>,
+    data: ItemData,
+}
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+pub enum Item {
+    Const(Idx<ConstData>),
+}
+
+impl From<Idx<ConstData>> for Item {
+    fn from(v: Idx<ConstData>) -> Self {
+        Self::Const(v)
+    }
+}
+
+#[derive(Debug, Default, Eq, PartialEq)]
 struct ItemData {
-    value_defs: Arena<ValueDefData>,
+    consts: Arena<ConstData>,
 }
 
 impl<'db> LowerCtxt<'db> {
@@ -21,22 +37,24 @@ impl<'db> LowerCtxt<'db> {
         Self { db, data: Default::default() }
     }
 
-    pub(crate) fn lower_items(&mut self, items: AstChildren<ast::Item>) -> Items {
-        items.flat_map(|item| self.lower_item(item)).collect()
+    pub(crate) fn lower_items(&mut self, ast: AstChildren<ast::Item>) -> Items {
+        let mut items = Items::default();
+        items.indexes = ast.flat_map(|item| self.lower_item(item)).collect();
+        items
     }
 
     pub(crate) fn lower_item(&mut self, item: ast::Item) -> Option<Item> {
         let item = match item {
-            ast::Item::ValueDef(value_def) => self.lower_value_def(value_def)?.into(),
+            ast::Item::Const(c) => self.lower_const(c)?.into(),
         };
         Some(item)
     }
 
-    fn lower_value_def(&mut self, value_def: ast::ValueDef) -> Option<Idx<ValueDefData>> {
-        let pat = self.lower_pat(value_def.pat()?);
-        let ty = value_def.ty().map(|ty| self.lower_ty(ty));
-        let value_def = ValueDefData { pat, ty };
-        Some(self.data.value_defs.alloc(value_def))
+    fn lower_const(&mut self, c: ast::Const) -> Option<Idx<ConstData>> {
+        let pat = self.lower_pat(c.pat()?);
+        let ty = c.ty().map(|ty| self.lower_ty(ty));
+        let data = ConstData { pat, ty };
+        Some(self.data.consts.alloc(data))
     }
 
     pub(crate) fn lower_ty(&self, ty: ast::Type) -> Type {

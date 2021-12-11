@@ -6,7 +6,7 @@ node_accessors!(Fn { body: BlockExpr });
 
 ast_node!(SourceFile);
 ast_node!(BlockExpr);
-ast_node!(ValueDef: HasType, HasName, HasPat);
+ast_node!(Const: HasType, HasName, HasPat);
 ast_node!(Literal);
 ast_node!(BindingPat);
 ast_node!(Name);
@@ -128,7 +128,7 @@ impl rowan::ast::AstNode for Expr {
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum Item {
-    ValueDef(ValueDef),
+    Const(Const),
 }
 
 impl rowan::ast::AstNode for Item {
@@ -139,7 +139,7 @@ impl rowan::ast::AstNode for Item {
         Self: Sized,
     {
         match kind {
-            SyntaxKind::ValueDef => true,
+            SyntaxKind::Const => true,
             _ => false,
         }
     }
@@ -152,7 +152,7 @@ impl rowan::ast::AstNode for Item {
             return None;
         }
         let node = match node.kind() {
-            SyntaxKind::ValueDef => Self::ValueDef(ValueDef { node }),
+            SyntaxKind::Const => Self::Const(Const { node }),
             _ => unreachable!(),
         };
         Some(node)
@@ -160,7 +160,7 @@ impl rowan::ast::AstNode for Item {
 
     fn syntax(&self) -> &rowan::SyntaxNode<Self::Language> {
         match self {
-            Item::ValueDef(node) => node.syntax(),
+            Item::Const(node) => node.syntax(),
         }
     }
 }

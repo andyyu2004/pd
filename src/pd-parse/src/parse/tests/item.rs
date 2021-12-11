@@ -6,10 +6,10 @@ use crate::parser::{ParseError, ParseErrorKind};
 use crate::{parse, parse_syntax};
 
 #[test]
-fn test_parse_item_value_def() {
+fn test_parse_item_const() {
     let syntax = parse_syntax!(ast::Item, let x = false);
     let expected = expect![[r#"
-        ValueDef@0..13
+        Const@0..13
           LetKw@0..3 "let"
           Whitespace@3..4 " "
           BindingPat@4..6
@@ -26,10 +26,10 @@ fn test_parse_item_value_def() {
 }
 
 #[test]
-fn test_parse_item_value_def_with_ty() {
+fn test_parse_item_const_with_ty() {
     let syntax = parse_syntax!(ast::Item, let x: bool = false);
     let expected = expect![[r#"
-        ValueDef@0..20
+        Const@0..20
           LetKw@0..3 "let"
           Whitespace@3..4 " "
           BindingPat@4..6
@@ -52,10 +52,10 @@ fn test_parse_item_value_def_with_ty() {
 }
 
 #[test]
-fn test_parse_item_value_def_missing_equal() {
+fn test_parse_item_const_missing_equal() {
     let parsed = parse::<ast::Item>(stringify!(let x false));
     let expected = expect![[r#"
-        ValueDef@0..11
+        Const@0..11
           LetKw@0..3 "let"
           Whitespace@3..4 " "
           BindingPat@4..6

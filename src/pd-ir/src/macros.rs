@@ -10,7 +10,7 @@ macro_rules! intern_key {
                 // Suppose the intern key is called `Foo`, then:
                 //  - the corresponding data is called `FooData`.
                 //  - the interning method is called `intern_Foo`.
-                pub fn lookup(self, db: &dyn $crate::InternDatabase) -> ::std::sync::Arc<[<$name Data>]> {
+                pub fn lookup(self, db: &dyn $crate::InternDatabase) -> ::std::sync::Arc<[<$name Loc>]> {
                     db.[<lookup_intern_$name:snake>](self)
                 }
             }

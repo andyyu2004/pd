@@ -6,16 +6,33 @@ pub use expr::*;
 pub use pat::*;
 pub use ty::*;
 
-use la_arena::Idx;
+use la_arena::{Arena, Idx};
 use pd_syntax::{ast, AstMethods};
+use pd_vfs::FileId;
 use smol_str::SmolStr;
 
 use crate::intern_key;
+use crate::resolve::Module;
 
-intern_key!(ValueDef);
+intern_key!(Const);
+
+pub type ConstLoc = ItemLoc<Const>;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub struct ValueDefData {
+pub struct ItemLoc<N> {
+    pub container: Module,
+    pub id: ItemId<N>,
+}
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+pub struct ItemId<N> {
+    file: FileId,
+    /// Index into the items for the file
+    value: Idx<N>,
+}
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+pub struct ConstData {
     pub pat: Pat,
     pub ty: Option<Type>,
 }
@@ -28,18 +45,5 @@ impl From<ast::Name> for Name {
         // TODO: is there way to do this without doing a double allocations?
         // smolstr only takes a str but we are giving it a string
         Self(SmolStr::new(name.syntax().first_child().unwrap().text().to_string()))
-    }
-}
-
-pub type Items = Vec<Item>;
-
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub enum Item {
-    ValueDef(Idx<ValueDefData>),
-}
-
-impl From<Idx<ValueDefData>> for Item {
-    fn from(v: Idx<ValueDefData>) -> Self {
-        Self::ValueDef(v)
     }
 }

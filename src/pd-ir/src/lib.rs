@@ -13,19 +13,20 @@ use std::sync::Arc;
 
 use crate::lower::LowerCtxt;
 
+use self::lower::Items;
 use self::resolve::Defs;
 
 #[salsa::query_group(InternDatabaseStorage)]
 pub trait InternDatabase {
     #[salsa::interned]
-    fn intern_value_def(&self, value_def: Arc<ValueDefData>) -> ValueDef;
+    fn intern_const(&self, c: Arc<ConstLoc>) -> Const;
 }
 
 #[salsa::query_group(DefDatabaseStorage)]
 pub trait DefDatabase: InternDatabase + AstDatabase {
     fn defs(&self) -> Arc<Defs>;
     fn file_items(&self, file_id: FileId) -> Arc<Items>;
-    fn value_def_data(&self, value_def: ValueDef) -> Arc<ValueDefData>;
+    fn const_data(&self, c: Const) -> Arc<ConstData>;
 }
 
 fn file_items(db: &dyn DefDatabase, file_id: FileId) -> Arc<Items> {
@@ -44,7 +45,7 @@ fn defs(db: &dyn DefDatabase) -> Arc<Defs> {
     todo!()
 }
 
-fn value_def_data(db: &dyn DefDatabase, value_def: ValueDef) -> Arc<ValueDefData> {
+fn const_data(db: &dyn DefDatabase, c: Const) -> Arc<ConstData> {
     todo!()
 }
 

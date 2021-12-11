@@ -17,7 +17,7 @@ fn test_ide_parse() -> Result<()> {
     let parsed = analysis.parse(id)?;
     let expected = expect![[r#"
         SourceFile@0..13
-          ValueDef@0..13
+          Const@0..13
             LetKw@0..3 "let"
             Whitespace@3..4 " "
             BindingPat@4..6
