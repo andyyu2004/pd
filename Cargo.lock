@@ -363,6 +363,7 @@ dependencies = [
  "pd-parse",
  "pd-syntax",
  "pd-vfs",
+ "rustc-hash",
  "salsa",
  "smol_str",
 ]

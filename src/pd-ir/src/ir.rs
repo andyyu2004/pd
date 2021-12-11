@@ -3,10 +3,10 @@ mod pat;
 mod ty;
 
 pub use expr::*;
-use la_arena::Idx;
 pub use pat::*;
 pub use ty::*;
 
+use la_arena::Idx;
 use pd_syntax::{ast, AstMethods};
 use smol_str::SmolStr;
 

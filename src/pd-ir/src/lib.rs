@@ -1,6 +1,8 @@
 pub mod ir;
+
 mod lower;
 mod macros;
+mod resolve;
 
 use ir::*;
 use pd_parse::{AstDatabase, Parse};
@@ -11,6 +13,8 @@ use std::sync::Arc;
 
 use crate::lower::LowerCtxt;
 
+use self::resolve::Defs;
+
 #[salsa::query_group(InternDatabaseStorage)]
 pub trait InternDatabase {
     #[salsa::interned]
@@ -19,6 +23,7 @@ pub trait InternDatabase {
 
 #[salsa::query_group(DefDatabaseStorage)]
 pub trait DefDatabase: InternDatabase + AstDatabase {
+    fn defs(&self) -> Arc<Defs>;
     fn file_items(&self, file_id: FileId) -> Arc<Items>;
     fn value_def_data(&self, value_def: ValueDef) -> Arc<ValueDefData>;
 }
@@ -32,6 +37,11 @@ fn file_items(db: &dyn DefDatabase, file_id: FileId) -> Arc<Items> {
     let mut lcx = LowerCtxt::new(db);
     let items = lcx.lower_items(items);
     Arc::new(items)
+}
+
+fn defs(db: &dyn DefDatabase) -> Arc<Defs> {
+    // let mut defs = Defs::new();
+    todo!()
 }
 
 fn value_def_data(db: &dyn DefDatabase, value_def: ValueDef) -> Arc<ValueDefData> {
