@@ -1,12 +1,24 @@
+mod collector;
+
 use la_arena::{Arena, Idx};
 use rustc_hash::FxHashMap;
 
 use crate::ir::{Const, Name};
+use crate::DefDatabase;
 
-#[derive(Debug, PartialEq, Eq)]
+use self::collector::DefCollector;
+
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct Defs {
-    pkg: Pkg,
     modules: Arena<ModuleData>,
+}
+
+impl Defs {
+    pub(crate) fn collect(db: &dyn DefDatabase) -> Defs {
+        let mut collector = DefCollector::new(db);
+        collector.collect();
+        collector.finish()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

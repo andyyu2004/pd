@@ -25,7 +25,7 @@ pub trait InternDatabase {
 #[salsa::query_group(DefDatabaseStorage)]
 pub trait DefDatabase: InternDatabase + AstDatabase {
     fn defs(&self) -> Arc<Defs>;
-    fn file_items(&self, file_id: FileId) -> Arc<Items>;
+    fn file_items(&self, file: FileId) -> Arc<Items>;
     fn const_data(&self, c: Const) -> Arc<ConstData>;
 }
 
@@ -41,8 +41,7 @@ fn file_items(db: &dyn DefDatabase, file_id: FileId) -> Arc<Items> {
 }
 
 fn defs(db: &dyn DefDatabase) -> Arc<Defs> {
-    // let mut defs = Defs::new();
-    todo!()
+    Arc::new(Defs::collect(db))
 }
 
 fn const_data(db: &dyn DefDatabase, c: Const) -> Arc<ConstData> {

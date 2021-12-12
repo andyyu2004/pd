@@ -16,7 +16,7 @@ use crate::resolve::Module;
 
 intern_key!(Const);
 
-pub type ConstLoc = ItemLoc<Const>;
+pub type ConstLoc = ItemLoc<ConstData>;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub struct ItemLoc<N> {
@@ -29,6 +29,12 @@ pub struct ItemId<N> {
     file: FileId,
     /// Index into the items for the file
     value: Idx<N>,
+}
+
+impl<N> ItemId<N> {
+    pub fn new(file: FileId, value: Idx<N>) -> Self {
+        Self { file, value }
+    }
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]

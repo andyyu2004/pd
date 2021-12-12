@@ -1,3 +1,6 @@
+use std::hash::Hash;
+use std::ops::Index;
+
 use la_arena::{Arena, Idx};
 use pd_syntax::ast;
 use pd_syntax::{AstChildren, HasPat, HasType};
@@ -16,13 +19,59 @@ pub struct Items {
     data: ItemData,
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub enum Item {
-    Const(Idx<ConstData>),
+impl<'a> IntoIterator for &'a Items {
+    type IntoIter = std::iter::Copied<std::slice::Iter<'a, Item>>;
+    type Item = Item;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.indexes.iter().copied()
+    }
 }
 
-impl From<Idx<ConstData>> for Item {
-    fn from(v: Idx<ConstData>) -> Self {
+#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
+pub enum Item {
+    Const(ItemIdx<ConstData>),
+}
+
+impl Index<ItemIdx<ConstData>> for Items {
+    type Output = ConstData;
+
+    fn index(&self, index: ItemIdx<ConstData>) -> &Self::Output {
+        &self.data.consts[index.idx]
+    }
+}
+
+#[derive(Debug)]
+pub struct ItemIdx<N> {
+    idx: Idx<N>,
+}
+
+impl<N> Eq for ItemIdx<N> {
+}
+
+impl<N> PartialEq for ItemIdx<N> {
+    fn eq(&self, other: &Self) -> bool {
+        self.idx == other.idx
+    }
+}
+
+impl<N> Hash for ItemIdx<N> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.idx.hash(state);
+    }
+}
+
+impl<N> Clone for ItemIdx<N> {
+    fn clone(&self) -> Self {
+        Self { idx: self.idx.clone() }
+    }
+}
+
+impl<N> Copy for ItemIdx<N> {
+}
+
+impl From<ItemIdx<ConstData>> for Item {
+    fn from(v: ItemIdx<ConstData>) -> Self {
         Self::Const(v)
     }
 }
@@ -50,11 +99,11 @@ impl<'db> LowerCtxt<'db> {
         Some(item)
     }
 
-    fn lower_const(&mut self, c: ast::Const) -> Option<Idx<ConstData>> {
+    fn lower_const(&mut self, c: ast::Const) -> Option<ItemIdx<ConstData>> {
         let pat = self.lower_pat(c.pat()?);
         let ty = c.ty().map(|ty| self.lower_ty(ty));
         let data = ConstData { pat, ty };
-        Some(self.data.consts.alloc(data))
+        Some(id(self.data.consts.alloc(data)))
     }
 
     pub(crate) fn lower_ty(&self, ty: ast::Type) -> Type {
@@ -69,4 +118,8 @@ impl<'db> LowerCtxt<'db> {
             ast::Pat::Literal(lit) => Pat::Literal(),
         }
     }
+}
+
+fn id(idx: Idx<ConstData>) -> ItemIdx<ConstData> {
+    ItemIdx { idx }
 }
