@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "src/pd-codegen",
     "src/pd-db",
     "src/pd-ds",
     "src/pd-ide",

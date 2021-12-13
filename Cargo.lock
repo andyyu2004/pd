@@ -318,6 +318,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "pd-codegen"
+version = "0.1.0"
+dependencies = [
+ "pd-ir",
+ "salsa",
+]
+
+[[package]]
 name = "pd-db"
 version = "0.1.0"
 dependencies = [
